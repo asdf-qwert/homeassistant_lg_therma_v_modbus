@@ -1,0 +1,335 @@
+title: LG Therma V
+views:
+
+  ##############################################################
+  # VIEW 1: PŘEHLED
+  ##############################################################
+  - title: Přehled
+    icon: mdi:heat-pump
+    type: sections
+    max_columns: 2
+    sections:
+
+      # ----------------------------------------------------------
+      # Ovládání
+      # ----------------------------------------------------------
+      - title: Ovládání
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: switch.hp_main_switch
+            name: Podlahovka
+            icon: mdi:heating-coil
+            tap_action:
+              action: toggle
+
+          - type: custom:mushroom-select-card
+            entity: input_select.hp_set_operation_mode
+            name: Režim provozu
+            icon: mdi:thermostat
+
+          - type: custom:mushroom-entity-card
+            entity: switch.hp_dhw
+            name: Ohřev TUV
+            icon: mdi:water-boiler
+            tap_action:
+              action: toggle
+
+          - type: custom:mushroom-entity-card
+            entity: switch.hp_silent_mode
+            name: Tichý režim
+            icon: mdi:volume-off
+            tap_action:
+              action: toggle
+
+          - type: custom:mushroom-entity-card
+            entity: switch.hp_dhw_desinfection_mode
+            name: Dezinfekce TUV
+            icon: mdi:bacteria
+            tap_action:
+              action: toggle
+
+      # ----------------------------------------------------------
+      # Nastavení teplot
+      # ----------------------------------------------------------
+      - title: Nastavení teplot
+        cards:
+          - type: custom:mushroom-number-card
+            entity: input_number.hp_dhw_target_temp
+            name: Cílová teplota TUV
+            icon: mdi:water-thermometer
+            display_mode: slider
+
+          - type: custom:mushroom-number-card
+            entity: input_number.hp_circuit1_target_temp
+            name: Cílová teplota podlahy
+            icon: mdi:heating-coil
+            display_mode: slider
+
+          - type: custom:mushroom-number-card
+            entity: input_number.hp_shift_value_in_auto_mode_circuit1
+            name: Korekce v Auto režimu
+            icon: mdi:tune
+            display_mode: slider
+
+      # ----------------------------------------------------------
+      # Aktuální teploty
+      # ----------------------------------------------------------
+      - title: Aktuální teploty
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_outside_temp
+            name: Venkovní teplota
+            icon: mdi:thermometer
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_room_temp
+            name: Teplota v místnosti
+            icon: mdi:home-thermometer
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_outlet_temp
+            name: Výstupní teplota
+            icon: mdi:thermometer-chevron-up
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_inlet_temp
+            name: Přívodní teplota
+            icon: mdi:thermometer-chevron-down
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_dhw_water_temp
+            name: Teplota TUV
+            icon: mdi:water-thermometer
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_backup_heater_outlet_temp
+            name: Záložní ohřev (výstup)
+            icon: mdi:heating-coil
+
+      # ----------------------------------------------------------
+      # Stav komponent
+      # ----------------------------------------------------------
+      - title: Stav komponent
+        cards:
+          - type: entities
+            entities:
+              - entity: binary_sensor.hp_compressor_status
+                name: Kompresor
+                icon: mdi:engine
+              - entity: binary_sensor.hp_water_pump_status
+                name: Vodní čerpadlo
+                icon: mdi:pump
+              - entity: binary_sensor.hp_ext_water_pump_status
+                name: Ext. čerpadlo
+                icon: mdi:pump-off
+              - entity: binary_sensor.hp_defrosting_status
+                name: Odmrazování
+                icon: mdi:snowflake-melt
+              - entity: binary_sensor.hp_dhw_heating_status
+                name: Ohřev TUV
+                icon: mdi:water-boiler
+              - entity: binary_sensor.hp_cooling_status
+                name: Chlazení
+                icon: mdi:snowflake
+              - entity: binary_sensor.hp_backup_heater_step1_status
+                name: Záložní ohřev krok 1
+                icon: mdi:fire-circle
+              - entity: binary_sensor.hp_backup_heater_step2_status
+                name: Záložní ohřev krok 2
+                icon: mdi:fire
+              - entity: binary_sensor.hp_error_status
+                name: Chybový stav
+                icon: mdi:alert-circle
+
+      # ----------------------------------------------------------
+      # Provozní hodnoty
+      # ----------------------------------------------------------
+      - title: Provozní hodnoty
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.shellypro3em_a4f00fcfb120_phase_a_vykon
+            name: Spotřeba (jednotky)
+            icon: mdi:lightning-bolt
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.shellypro3em_a4f00fcfb120_phase_c_vykon
+            name: Spotřeba (ohřívač TUV)
+            icon: mdi:water-boiler
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_thermal_power
+            name: Tepelný výkon
+            icon: mdi:fire
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_cop
+            name: COP
+            icon: mdi:leaf
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_flow_rate
+            name: Průtok vody
+            icon: mdi:waves-arrow-right
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_water_pressure
+            name: Tlak vody
+            icon: mdi:gauge
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_compressor_rpm
+            name: Otáčky kompresoru
+            icon: mdi:rotate-3d-variant
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_energy_state
+            name: Energetický stav
+            icon: mdi:lightning-bolt
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_error_code
+            name: Kód chyby
+            icon: mdi:alert
+
+
+  ##############################################################
+  # VIEW 2: DIAGNOSTIKA
+  ##############################################################
+
+  - title: Diagnostika
+    icon: mdi:chart-line
+    type: sections
+    max_columns: 2
+    sections:
+
+      # ----------------------------------------------------------
+      # Historie
+      # ----------------------------------------------------------
+      - title: Historie
+        column_span: 4
+        cards:
+          - type: history-graph
+            hours_to_show: 24
+            entities:
+              - entity: sensor.shellypro3em_a4f00fcfb120_phase_a_vykon
+              - entity: sensor.shellypro3em_a4f00fcfb120_phase_c_vykon
+              - entity: sensor.hp_outside_temp
+              - entity: sensor.hp_room_temp
+              - entity: sensor.hp_dhw_water_temp
+            grid_options:
+              columns: full
+
+      # ----------------------------------------------------------
+      # Grafy teplot
+      # ----------------------------------------------------------
+      - title: Grafy teplot
+        cards:
+          - type: custom:mini-graph-card
+            name: Teploty oběhu
+            icon: mdi:thermometer-lines
+            hours_to_show: 24
+            points_per_hour: 6
+            line_width: 2
+            entities:
+              - entity: sensor.hp_outlet_temp
+                name: Výstup
+                color: "#e74c3c"
+              - entity: sensor.hp_inlet_temp
+                name: Přívod
+                color: "#3498db"
+              - entity: sensor.hp_outside_temp
+                name: Venkovní
+                color: "#2ecc71"
+
+          - type: custom:mini-graph-card
+            name: Teplota TUV
+            icon: mdi:water-thermometer
+            hours_to_show: 24
+            points_per_hour: 6
+            line_width: 2
+            color: "#e67e22"
+            entities:
+              - entity: sensor.hp_dhw_water_temp
+                name: Teplota TUV
+
+          - type: custom:mini-graph-card
+            name: Podlaha (HC1)
+            icon: mdi:heating-coil
+            hours_to_show: 24
+            points_per_hour: 6
+            line_width: 2
+            color: "#9b59b6"
+            entities:
+              - entity: sensor.hp_outlet_temp
+                name: Výstup podlahy
+
+      # ----------------------------------------------------------
+      # Chladivový okruh
+      # ----------------------------------------------------------
+      - title: Chladivový okruh
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_high_pressure
+            name: Vysoký tlak
+            icon: mdi:gauge-full
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_low_pressure
+            name: Nízký tlak
+            icon: mdi:gauge-empty
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_temp_heatgas
+            name: Horký plyn
+            icon: mdi:fire
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_temp_suction
+            name: Sací teplota
+            icon: mdi:thermometer-minus
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_temp_liquid_gas
+            name: Kapalné chladivo
+            icon: mdi:gas-cylinder
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_temp_pipe_out
+            name: Výstup potrubí
+            icon: mdi:pipe
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_temp_before_vaporiser
+            name: Před výparníkem
+            icon: mdi:thermometer-check
+
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_temp_after_vaporiser
+            name: Za výparníkem
+            icon: mdi:thermometer-water
+
+      # ----------------------------------------------------------
+      # Systémové info
+      # ----------------------------------------------------------
+      - title: Systémové info
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.hp_error_code
+                name: Kód chyby
+                icon: mdi:alert-circle
+              - entity: sensor.hp_odu_operation_cycle
+                name: Provozní cyklus
+                icon: mdi:counter
+              - entity: sensor.hp_energy_state
+                name: Energetický stav
+                icon: mdi:lightning-bolt
+              - entity: sensor.hp_product_group
+                name: Skupina produktu
+                icon: mdi:identifier
+              - entity: sensor.hp_product_info
+                name: Info o produktu
+                icon: mdi:information
+              - entity: input_select.hp_set_control_method
+                name: Metoda řízení
+                icon: mdi:tune-variant
