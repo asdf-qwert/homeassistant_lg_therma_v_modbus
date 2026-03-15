@@ -535,14 +535,103 @@ input_number:
     max: 60
     step: 1
 
+  # --- Topná křivka ---
+  hp_curve_point1_outdoor:
+    name: "Topná křivka – bod 1 venkovní teplota (teplý)"
+    min: 5
+    max: 25
+    step: 1
+    unit_of_measurement: "°C"
+
+  hp_curve_point1_water:
+    name: "Topná křivka – bod 1 teplota vody (teplý)"
+    min: 15
+    max: 45
+    step: 1
+    unit_of_measurement: "°C"
+
+  hp_curve_point2_outdoor:
+    name: "Topná křivka – bod 2 venkovní teplota (studený)"
+    min: -20
+    max: 10
+    step: 1
+    unit_of_measurement: "°C"
+
+  hp_curve_point2_water:
+    name: "Topná křivka – bod 2 teplota vody (studený)"
+    min: 20
+    max: 55
+    step: 1
+    unit_of_measurement: "°C"
+
+  hp_curve_max_temp:
+    name: "Topná křivka – max. teplota vody"
+    min: 20
+    max: 45
+    step: 1
+    unit_of_measurement: "°C"
+
+  hp_curve_min_temp:
+    name: "Topná křivka – min. teplota vody"
+    min: 15
+    max: 35
+    step: 1
+    unit_of_measurement: "°C"
+
+  hp_curve_shift:
+    name: "Topná křivka – posun setpointu"
+    min: -5
+    max: 5
+    step: 0.5
+    unit_of_measurement: "°C"
+
+  hp_curve_heating_cutoff:
+    name: "Topná křivka – cutoff venkovní teplota"
+    min: 10
+    max: 25
+    step: 1
+    unit_of_measurement: "°C"
+
+  hp_forecast_hours:
+    name: "Předpověď – počet hodin dopředu"
+    min: 1
+    max: 12
+    step: 1
+
+  hp_forecast_min_temp:
+    name: "Předpověď – min. teplota (auto)"
+    min: -30
+    max: 40
+    step: 0.1
+    unit_of_measurement: "°C"
+
+  hp_solar_correction_max:
+    name: "Solární korekce – maximum"
+    min: 0
+    max: 8
+    step: 0.5
+    unit_of_measurement: "°C"
+
+  hp_room_target_temp:
+    name: "Cílová teplota místnosti (ochrana)"
+    min: 16
+    max: 26
+    step: 0.5
+    unit_of_measurement: "°C"
+
+input_boolean:
+  hp_heating_curve_enabled:
+    name: "Topná křivka – aktivní"
+    icon: mdi:chart-bell-curve
+
 input_select:
   # Input Select
   # -----------------------------------------
   hp_set_operation_mode:
     name: "Selector Heatpump Operation Mode"
     options:
-      - "Cooling"
-      - "Heating"
+      - "Chlazení"
+      - "Topení"
       - "Auto"
 
   hp_set_control_method:
@@ -555,6 +644,13 @@ input_select:
 template:
   # Template sensors for better readability
   #-----------------------------------------
+  - binary_sensor:
+      - name: "HP Backup Heater Active"
+        unique_id: "hp_backup_heater_active"
+        device_class: heat
+        state: >
+          {{ states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0) > 50 }}
+
   - sensor:
       - name: "HP Energy State"
         unique_id: "hp_energy_state_label"
@@ -572,16 +668,27 @@ template:
             {% else %} Unknown
             {% endif %}
 
+      - name: "HP Delta Temp"
+        unique_id: "hp_delta_temp"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {{ (states('sensor.hp_outlet_temp') | float(0) - states('sensor.hp_inlet_temp') | float(0)) | round(1) }}
+
       - name: "HP Thermal Power"
         unique_id: "hp_thermal_power"
         unit_of_measurement: W
         device_class: power
         state_class: measurement
         state: >
+          {% set compressor_on = is_state('binary_sensor.hp_compressor_status', 'on')
+                              and (states('sensor.shellypro3em_a4f00fcfb120_phase_a_vykon') | float(0)
+                                 + states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0)) > 300 %}
           {% set flow = states('sensor.hp_flow_rate') | float(0) %}
-          {% set dt = states('sensor.hp_outlet_temp') | float(0) - states('sensor.hp_inlet_temp') | float(0) %}
-          {% if dt > 0 and dt < 15 %}
-            {{ [flow * 69.77 * dt, 10000] | min | round(0) }}
+          {% set dt = states('sensor.hp_delta_temp') | float(0) %}
+          {% if compressor_on and flow > 0 and dt > 0 %}
+            {{ (flow * 69.77 * dt) | round(0) }}
           {% else %}
             0
           {% endif %}
@@ -590,14 +697,100 @@ template:
         unique_id: "hp_cop"
         state_class: measurement
         state: >
+          {% set compressor_on = is_state('binary_sensor.hp_compressor_status', 'on') %}
           {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
           {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_phase_a_vykon') | float(0)
                         + states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0) %}
-          {% if p_elec > 0 %}
+          {% if compressor_on and p_thermal > 0 and p_elec > 300 %}
             {{ (p_thermal / p_elec) | round(2) }}
           {% else %}
             0
           {% endif %}
+
+      - name: "HP COP stats"
+        unique_id: "hp_cop_stats"
+        state_class: measurement
+        state: >
+          {% set cop = states('sensor.hp_cop') | float(0) %}
+          {{ cop if cop > 0 else none }}
+
+      # --- Topná křivka ---
+
+      - name: "HP Curve Design Temp"
+        unique_id: "hp_curve_design_temp"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% set current = states('sensor.hp_outside_temp') | float(99) %}
+          {% set forecast = states('input_number.hp_forecast_min_temp') | float(99) %}
+          {{ [current, forecast] | min | round(1) }}
+
+      - name: "HP Solar Correction"
+        unique_id: "hp_solar_correction"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        state: >
+          {% set elev = state_attr('sun.sun', 'elevation') | float(0) %}
+          {% set cond = states('weather.forecast_home') %}
+          {% set max_c = states('input_number.hp_solar_correction_max') | float(4) %}
+          {% if elev < 10 %}
+            0
+          {% elif cond in ['sunny', 'clear-night', 'exceptional'] %}
+            {{ (max_c * [1.0, (elev - 10) / 30] | min) | round(1) | float * -1 }}
+          {% elif cond in ['partlycloudy'] %}
+            {{ (max_c * 0.4 * [1.0, (elev - 10) / 40] | min) | round(1) | float * -1 }}
+          {% else %}
+            0
+          {% endif %}
+
+      - name: "HP Room Correction"
+        unique_id: "hp_room_correction"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        state: >
+          {% set room = states('sensor.hp_room_temp') | float(0) %}
+          {% set target = states('input_number.hp_room_target_temp') | float(21) %}
+          {{ [[(target - room) * 3, -10] | max, 10] | min | round(1) }}
+
+      - name: "HP Forecast Min Temp"
+        unique_id: "hp_forecast_min_temp"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: "{{ states('input_number.hp_forecast_min_temp') | float(0) | round(1) }}"
+
+      - name: "HP Curve Raw"
+        unique_id: "hp_curve_raw"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% set t_out = states('sensor.hp_curve_design_temp') | float(0) %}
+          {% set t1 = states('input_number.hp_curve_point1_outdoor') | float(18) %}
+          {% set w1 = states('input_number.hp_curve_point1_water') | float(24) %}
+          {% set t2 = states('input_number.hp_curve_point2_outdoor') | float(-5) %}
+          {% set w2 = states('input_number.hp_curve_point2_water') | float(30) %}
+          {% set cutoff = states('input_number.hp_curve_heating_cutoff') | float(18) %}
+          {% set min_t = states('input_number.hp_curve_min_temp') | float(20) %}
+          {% if t_out >= cutoff %}
+            {{ min_t | int }}
+          {% else %}
+            {{ (w1 + (w2 - w1) / (t2 - t1) * (t_out - t1)) | round(1) }}
+          {% endif %}
+
+      - name: "HP Heating Curve Setpoint"
+        unique_id: "hp_heating_curve_setpoint"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% set raw = states('sensor.hp_curve_raw') | float(0) %}
+          {% set min_t = states('input_number.hp_curve_min_temp') | float(20) %}
+          {% set solar = states('sensor.hp_solar_correction') | float(0) %}
+          {% set room = states('sensor.hp_room_correction') | float(0) %}
+          {% set shift = states('input_number.hp_curve_shift') | float(0) %}
+          {{ [min_t, raw + solar + room + shift] | max | round(0) | int }}
 
 # ---------------------------------------------------------------------------------------------------------------
 # Automations: Write modbus registers on input changes via GUI
@@ -626,8 +819,8 @@ automation:
           slave: 1
           address: 0
           value: >-
-            {% if is_state('input_select.hp_set_operation_mode', 'Cooling') %} {{cooling}}
-            {% elif is_state('input_select.hp_set_operation_mode', 'Heating') %} {{heating}}
+            {% if is_state('input_select.hp_set_operation_mode', 'Chlazení') %} {{cooling}}
+            {% elif is_state('input_select.hp_set_operation_mode', 'Topení') %} {{heating}}
             {% else %}
             {{auto}}
             {% endif %}
@@ -650,9 +843,9 @@ automation:
             {% if is_state('sensor.hp_operation_mode', '3') %}
             Auto
             {% elif is_state('sensor.hp_operation_mode', '4') %}
-            Heating
+            Topení
             {% else %}
-            Cooling
+            Chlazení
             {% endif %}
     mode: single
 
@@ -822,3 +1015,183 @@ automation:
         data:
           value: "{{ states('sensor.hp_dhw_target_temp') }}"
     mode: single
+
+  ### Topná křivka – načtení předpovědi ###
+  #-------------------------------------------------------------------------------
+  - alias: "hp_automation_fetch_forecast"
+    id: "hp_automation_fetch_forecast"
+    description: "Každých 15 minut načte hodinovou předpověď a uloží minimální teplotu"
+    trigger:
+      - platform: time_pattern
+        minutes: /15
+      - platform: homeassistant
+        event: start
+    action:
+      - service: weather.get_forecasts
+        target:
+          entity_id: weather.forecast_home
+        data:
+          type: hourly
+        response_variable: forecast_data
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.hp_forecast_min_temp
+        data:
+          value: >
+            {% set hours = states('input_number.hp_forecast_hours') | int(6) %}
+            {% set fc = forecast_data['weather.forecast_home']['forecast'][:hours] %}
+            {% set temps = fc | map(attribute='temperature') | list %}
+            {{ temps | min if temps | length > 0 else states('sensor.hp_outside_temp') | float(0) }}
+    mode: single
+
+  ### Topná křivka – přepnutí režimu ###
+  #-------------------------------------------------------------------------------
+  - alias: "hp_automation_heating_curve_mode_switch"
+    id: "hp_automation_heating_curve_mode_switch"
+    description: "Při zapnutí křivky přepne do Heating, při vypnutí vrátí do Auto"
+    trigger:
+      - platform: state
+        entity_id: input_boolean.hp_heating_curve_enabled
+    action:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.hp_heating_curve_enabled
+                state: "on"
+            sequence:
+              - service: input_select.select_option
+                target:
+                  entity_id: input_select.hp_set_operation_mode
+                data:
+                  option: "Topení"
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.hp_heating_curve_enabled
+                state: "off"
+            sequence:
+              - service: input_select.select_option
+                target:
+                  entity_id: input_select.hp_set_operation_mode
+                data:
+                  option: "Auto"
+    mode: single
+
+  ### Topná křivka – aplikace setpointu ###
+  #-------------------------------------------------------------------------------
+  - alias: "hp_automation_compressor_start_counter"
+    id: "hp_automation_compressor_start_counter"
+    description: "Inkrementuje celkový počet startů kompresoru"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.hp_compressor_status
+        to: "on"
+    action:
+      - service: counter.increment
+        target:
+          entity_id: counter.hp_compressor_starts_total
+    mode: single
+
+  - alias: "hp_automation_apply_heating_curve"
+    id: "hp_automation_apply_heating_curve"
+    description: >
+      Zvýšení setpointu: okamžitě při změně venkovní teploty, korekcí nebo zapnutí křivky.
+      Snížení setpointu: každou hodinu (timer).
+    trigger:
+      - platform: time_pattern
+        hours: /1
+        id: "timer"
+      - platform: state
+        entity_id:
+          - sensor.hp_outside_temp
+          - sensor.hp_solar_correction
+          - sensor.hp_room_correction
+        id: "outdoor_temp"
+      - platform: state
+        entity_id: input_boolean.hp_heating_curve_enabled
+        to: "on"
+        id: "curve_enabled"
+    condition:
+      - condition: state
+        entity_id: input_boolean.hp_heating_curve_enabled
+        state: "on"
+      - condition: state
+        entity_id: input_select.hp_set_operation_mode
+        state: "Topení"
+      - condition: template
+        value_template: >
+          {% set new = states('sensor.hp_heating_curve_setpoint') | int %}
+          {% set cur = states('input_number.hp_circuit1_target_temp') | int %}
+          {% set diff = new - cur %}
+          {% if trigger.id == 'timer' %}
+            {{ diff | abs >= 1 }}
+          {% else %}
+            {{ diff >= 1 }}
+          {% endif %}
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.hp_circuit1_target_temp
+        data:
+          value: "{{ states('sensor.hp_heating_curve_setpoint') | int }}"
+    mode: single
+
+
+##############################################################
+# COUNTER
+##############################################################
+counter:
+  hp_compressor_starts_total:
+    name: "HP Starty kompresoru celkem"
+    icon: mdi:counter
+    step: 1
+
+
+##############################################################
+# STATISTICS SENSORS
+##############################################################
+sensor:
+  - platform: history_stats
+    name: "HP Compressor Starts Today"
+    unique_id: hp_compressor_starts_today
+    entity_id: binary_sensor.hp_compressor_status
+    state: "on"
+    type: count
+    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    end: "{{ now() }}"
+
+  - platform: history_stats
+    name: "HP Compressor Starts Week"
+    unique_id: hp_compressor_starts_week
+    entity_id: binary_sensor.hp_compressor_status
+    state: "on"
+    type: count
+    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=now().weekday()) }}"
+    end: "{{ now() }}"
+
+  - platform: history_stats
+    name: "HP Compressor Starts Month"
+    unique_id: hp_compressor_starts_month
+    entity_id: binary_sensor.hp_compressor_status
+    state: "on"
+    type: count
+    start: "{{ now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) }}"
+    end: "{{ now() }}"
+
+  - platform: history_stats
+    name: "HP Compressor Starts Year"
+    unique_id: hp_compressor_starts_year
+    entity_id: binary_sensor.hp_compressor_status
+    state: "on"
+    type: count
+    start: "{{ now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) }}"
+    end: "{{ now() }}"
+
+  - platform: statistics
+    name: "HP COP průměr"
+    unique_id: hp_cop_avg
+    entity_id: sensor.hp_cop_stats
+    state_characteristic: mean
+    max_age:
+      minutes: 2
+    sampling_size: 12
+    precision: 2
