@@ -624,6 +624,10 @@ input_boolean:
     name: "Topná křivka – aktivní"
     icon: mdi:chart-bell-curve
 
+  hp_dashboard_locked:
+    name: "Zámek ovládání"
+    icon: mdi:lock
+
 input_select:
   # Input Select
   # -----------------------------------------
