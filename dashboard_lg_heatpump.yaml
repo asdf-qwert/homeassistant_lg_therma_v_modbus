@@ -8,55 +8,225 @@ views:
       - cards:
           - type: heading
             heading: Ovládání
-          - type: custom:mushroom-entity-card
-            entity: switch.hp_main_switch
-            name: Podlahovka
-            icon: mdi:heating-coil
-            tap_action:
-              action: toggle
-          - type: custom:mushroom-select-card
-            entity: input_select.hp_set_operation_mode
-            name: Režim provozu
-            icon: mdi:thermostat
-          - type: custom:mushroom-entity-card
-            entity: switch.hp_dhw
-            name: Ohřev TUV
-            icon: mdi:water-boiler
-            tap_action:
-              action: toggle
-          - type: custom:mushroom-entity-card
-            entity: switch.hp_silent_mode
-            name: Tichý režim
-            icon: mdi:volume-off
-            tap_action:
-              action: toggle
-          - type: custom:mushroom-entity-card
-            entity: switch.hp_dhw_desinfection_mode
-            name: Dezinfekce TUV
-            icon: mdi:bacteria
-            tap_action:
-              action: toggle
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "off"
+            card:
+              type: custom:mushroom-entity-card
+              entity: input_boolean.hp_dashboard_locked
+              name: Zámek ovládání
+              icon: mdi:lock-open
+              tap_action:
+                action: toggle
+              icon_color: green
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "on"
+            card:
+              type: custom:mushroom-entity-card
+              entity: input_boolean.hp_dashboard_locked
+              name: Zámek ovládání – ZAMČENO
+              icon: mdi:lock
+              tap_action:
+                action: toggle
+              icon_color: red
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "off"
+            card:
+              type: custom:mushroom-entity-card
+              entity: switch.hp_main_switch
+              name: Podlahovka
+              icon: mdi:heating-coil
+              tap_action:
+                action: toggle
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "on"
+            card:
+              type: custom:mushroom-entity-card
+              entity: switch.hp_main_switch
+              name: Podlahovka
+              icon: mdi:heating-coil
+              tap_action:
+                action: none
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "off"
+            card:
+              type: custom:mushroom-select-card
+              entity: input_select.hp_set_operation_mode
+              name: Režim provozu
+              icon: mdi:thermostat
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "on"
+            card:
+              type: custom:mushroom-entity-card
+              entity: input_select.hp_set_operation_mode
+              name: Režim provozu
+              icon: mdi:thermostat
+              tap_action:
+                action: none
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "off"
+            card:
+              type: custom:mushroom-entity-card
+              entity: switch.hp_dhw
+              name: Ohřev TUV
+              icon: mdi:water-boiler
+              tap_action:
+                action: toggle
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "on"
+            card:
+              type: custom:mushroom-entity-card
+              entity: switch.hp_dhw
+              name: Ohřev TUV
+              icon: mdi:water-boiler
+              tap_action:
+                action: none
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "off"
+            card:
+              type: custom:mushroom-entity-card
+              entity: switch.hp_silent_mode
+              name: Tichý režim
+              icon: mdi:volume-off
+              tap_action:
+                action: toggle
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "on"
+            card:
+              type: custom:mushroom-entity-card
+              entity: switch.hp_silent_mode
+              name: Tichý režim
+              icon: mdi:volume-off
+              tap_action:
+                action: none
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "off"
+            card:
+              type: custom:mushroom-entity-card
+              entity: switch.hp_dhw_desinfection_mode
+              name: Dezinfekce TUV
+              icon: mdi:bacteria
+              tap_action:
+                action: toggle
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "on"
+            card:
+              type: custom:mushroom-entity-card
+              entity: switch.hp_dhw_desinfection_mode
+              name: Dezinfekce TUV
+              icon: mdi:bacteria
+              tap_action:
+                action: none
       - cards:
           - type: heading
             heading: Nastavení teplot
-          - type: custom:mushroom-number-card
-            entity: input_number.hp_dhw_target_temp
-            name: Cílová teplota TUV
-            icon: mdi:water-thermometer
-            display_mode: buttons
-            secondary_info: none
-          - type: custom:mushroom-number-card
-            entity: input_number.hp_circuit1_target_temp
-            name: Cílová teplota podlahy
-            icon: mdi:heating-coil
-            display_mode: buttons
-            secondary_info: none
-          - type: custom:mushroom-number-card
-            entity: input_number.hp_shift_value_in_auto_mode_circuit1
-            name: Korekce v Auto režimu
-            icon: mdi:tune
-            display_mode: buttons
-            secondary_info: none
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "off"
+            card:
+              type: custom:mushroom-number-card
+              entity: input_number.hp_dhw_target_temp
+              name: Cílová teplota TUV
+              icon: mdi:water-thermometer
+              display_mode: buttons
+              secondary_info: none
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "on"
+            card:
+              type: custom:mushroom-entity-card
+              entity: input_number.hp_dhw_target_temp
+              name: Cílová teplota TUV
+              icon: mdi:water-thermometer
+              tap_action:
+                action: none
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "off"
+            card:
+              type: custom:mushroom-number-card
+              entity: input_number.hp_circuit1_target_temp
+              name: Cílová teplota podlahy
+              icon: mdi:heating-coil
+              display_mode: buttons
+              secondary_info: none
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "on"
+            card:
+              type: custom:mushroom-entity-card
+              entity: input_number.hp_circuit1_target_temp
+              name: Cílová teplota podlahy
+              icon: mdi:heating-coil
+              tap_action:
+                action: none
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "off"
+            card:
+              type: custom:mushroom-number-card
+              entity: input_number.hp_shift_value_in_auto_mode_circuit1
+              name: Korekce v Auto režimu
+              icon: mdi:tune
+              display_mode: buttons
+              secondary_info: none
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "on"
+            card:
+              type: custom:mushroom-entity-card
+              entity: input_number.hp_shift_value_in_auto_mode_circuit1
+              name: Korekce v Auto režimu
+              icon: mdi:tune
+              tap_action:
+                action: none
       - cards:
           - type: heading
             heading: Aktuální teploty
@@ -122,12 +292,30 @@ views:
       - cards:
           - type: heading
             heading: Topná křivka
-          - type: custom:mushroom-entity-card
-            entity: input_boolean.hp_heating_curve_enabled
-            name: Topná křivka
-            icon: mdi:chart-bell-curve
-            tap_action:
-              action: toggle
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "off"
+            card:
+              type: custom:mushroom-entity-card
+              entity: input_boolean.hp_heating_curve_enabled
+              name: Topná křivka
+              icon: mdi:chart-bell-curve
+              tap_action:
+                action: toggle
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "on"
+            card:
+              type: custom:mushroom-entity-card
+              entity: input_boolean.hp_heating_curve_enabled
+              name: Topná křivka
+              icon: mdi:chart-bell-curve
+              tap_action:
+                action: none
           - type: entities
             title: Korekce
             entities:
@@ -155,30 +343,88 @@ views:
                 name: "→ Výsledná teplota vody"
                 icon: mdi:thermometer-auto
 
-          - type: entities
-            title: Parametry křivky
-            entities:
-              - entity: input_number.hp_curve_shift
-                name: Posun křivky
-                icon: mdi:tune-vertical
-              - entity: input_number.hp_room_target_temp
-                name: Cílová teplota místnosti
-                icon: mdi:home-thermometer-outline
-              - entity: input_number.hp_curve_point1_outdoor
-                name: Bod 1 – venkovní (teplý)
-                icon: mdi:thermometer-chevron-up
-              - entity: input_number.hp_curve_point1_water
-                name: Bod 1 – voda (teplý)
-                icon: mdi:water-thermometer-outline
-              - entity: input_number.hp_curve_point2_outdoor
-                name: Bod 2 – venkovní (studený)
-                icon: mdi:thermometer-chevron-down
-              - entity: input_number.hp_curve_point2_water
-                name: Bod 2 – voda (studený)
-                icon: mdi:water-thermometer
-              - entity: input_number.hp_curve_heating_cutoff
-                name: Cutoff (vypnutí topení)
-                icon: mdi:thermometer-off
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "off"
+            card:
+              type: entities
+              title: Parametry křivky
+              entities:
+                - entity: input_number.hp_curve_shift
+                  name: Posun křivky
+                  icon: mdi:tune-vertical
+                - entity: input_number.hp_room_target_temp
+                  name: Cílová teplota místnosti
+                  icon: mdi:home-thermometer-outline
+                - entity: input_number.hp_curve_point1_outdoor
+                  name: Bod 1 – venkovní (teplý)
+                  icon: mdi:thermometer-chevron-up
+                - entity: input_number.hp_curve_point1_water
+                  name: Bod 1 – voda (teplý)
+                  icon: mdi:water-thermometer-outline
+                - entity: input_number.hp_curve_point2_outdoor
+                  name: Bod 2 – venkovní (studený)
+                  icon: mdi:thermometer-chevron-down
+                - entity: input_number.hp_curve_point2_water
+                  name: Bod 2 – voda (studený)
+                  icon: mdi:water-thermometer
+                - entity: input_number.hp_curve_heating_cutoff
+                  name: Cutoff (vypnutí topení)
+                  icon: mdi:thermometer-off
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: input_boolean.hp_dashboard_locked
+                state: "on"
+            card:
+              type: vertical-stack
+              cards:
+                - type: markdown
+                  content: "**Parametry křivky**"
+                - type: custom:mushroom-entity-card
+                  entity: input_number.hp_curve_shift
+                  name: Posun křivky
+                  icon: mdi:tune-vertical
+                  tap_action:
+                    action: none
+                - type: custom:mushroom-entity-card
+                  entity: input_number.hp_room_target_temp
+                  name: Cílová teplota místnosti
+                  icon: mdi:home-thermometer-outline
+                  tap_action:
+                    action: none
+                - type: custom:mushroom-entity-card
+                  entity: input_number.hp_curve_point1_outdoor
+                  name: Bod 1 – venkovní (teplý)
+                  icon: mdi:thermometer-chevron-up
+                  tap_action:
+                    action: none
+                - type: custom:mushroom-entity-card
+                  entity: input_number.hp_curve_point1_water
+                  name: Bod 1 – voda (teplý)
+                  icon: mdi:water-thermometer-outline
+                  tap_action:
+                    action: none
+                - type: custom:mushroom-entity-card
+                  entity: input_number.hp_curve_point2_outdoor
+                  name: Bod 2 – venkovní (studený)
+                  icon: mdi:thermometer-chevron-down
+                  tap_action:
+                    action: none
+                - type: custom:mushroom-entity-card
+                  entity: input_number.hp_curve_point2_water
+                  name: Bod 2 – voda (studený)
+                  icon: mdi:water-thermometer
+                  tap_action:
+                    action: none
+                - type: custom:mushroom-entity-card
+                  entity: input_number.hp_curve_heating_cutoff
+                  name: Cutoff (vypnutí topení)
+                  icon: mdi:thermometer-off
+                  tap_action:
+                    action: none
 
       - cards:
           - type: heading
@@ -324,9 +570,26 @@ views:
               - entity: sensor.hp_product_info
                 name: Info o produktu
                 icon: mdi:information
-              - entity: input_select.hp_set_control_method
-                name: Metoda řízení
-                icon: mdi:tune-variant
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "off"
+                row:
+                  entity: input_select.hp_set_control_method
+                  name: Metoda řízení
+                  icon: mdi:tune-variant
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "on"
+                row:
+                  entity: input_select.hp_set_control_method
+                  name: Metoda řízení
+                  icon: mdi:tune-variant
+                  tap_action:
+                    action: none
           - type: entities
             title: Počty startů
             entities:
