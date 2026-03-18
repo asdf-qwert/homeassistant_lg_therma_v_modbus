@@ -483,6 +483,9 @@ views:
               - entity: binary_sensor.hp_backup_heater_active
                 name: Záložní ohřev
                 icon: mdi:fire
+              - entity: binary_sensor.hp_silent_mode_status
+                name: Tichý režim
+                icon: mdi:volume-off
               - entity: binary_sensor.hp_error_status
                 name: Chybový stav
                 icon: mdi:alert-circle
