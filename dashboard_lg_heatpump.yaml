@@ -641,11 +641,11 @@ views:
           - type: statistics-graph
             title: Starty kompresoru – historie
             entities:
-              - entity: sensor.hp_compressor_starts_today
+              - entity: counter.hp_compressor_starts_total
                 name: Starty
             stat_types:
-              - state
+              - change
             period: day
-            days_to_show: 365
+            days_to_show: 30
             grid_options:
               columns: full
