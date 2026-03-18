@@ -34,124 +34,154 @@ views:
               tap_action:
                 action: toggle
               icon_color: red
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: "off"
-            card:
-              type: custom:mushroom-entity-card
-              entity: switch.hp_main_switch
-              name: Podlahovka
-              icon: mdi:heating-coil
-              tap_action:
-                action: toggle
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: "on"
-            card:
-              type: custom:mushroom-entity-card
-              entity: switch.hp_main_switch
-              name: Podlahovka
-              icon: mdi:heating-coil
-              tap_action:
-                action: none
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: "off"
-            card:
-              type: custom:mushroom-select-card
-              entity: input_select.hp_set_operation_mode
-              name: Režim provozu
-              icon: mdi:thermostat
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: "on"
-            card:
-              type: custom:mushroom-entity-card
-              entity: input_select.hp_set_operation_mode
-              name: Režim provozu
-              icon: mdi:thermostat
-              tap_action:
-                action: none
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: "off"
-            card:
-              type: custom:mushroom-entity-card
-              entity: switch.hp_dhw
-              name: Ohřev TUV
-              icon: mdi:water-boiler
-              tap_action:
-                action: toggle
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: "on"
-            card:
-              type: custom:mushroom-entity-card
-              entity: switch.hp_dhw
-              name: Ohřev TUV
-              icon: mdi:water-boiler
-              tap_action:
-                action: none
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: "off"
-            card:
-              type: custom:mushroom-entity-card
-              entity: switch.hp_silent_mode
-              name: Tichý režim
-              icon: mdi:volume-off
-              tap_action:
-                action: toggle
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: "on"
-            card:
-              type: custom:mushroom-entity-card
-              entity: switch.hp_silent_mode
-              name: Tichý režim
-              icon: mdi:volume-off
-              tap_action:
-                action: none
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: "off"
-            card:
-              type: custom:mushroom-entity-card
-              entity: switch.hp_dhw_desinfection_mode
-              name: Dezinfekce TUV
-              icon: mdi:bacteria
-              tap_action:
-                action: toggle
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: "on"
-            card:
-              type: custom:mushroom-entity-card
-              entity: switch.hp_dhw_desinfection_mode
-              name: Dezinfekce TUV
-              icon: mdi:bacteria
-              tap_action:
-                action: none
+          - type: horizontal-stack
+            cards:
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "off"
+                card:
+                  type: custom:mushroom-entity-card
+                  entity: switch.hp_main_switch
+                  name: Podlahovka
+                  icon: mdi:heating-coil
+                  tap_action:
+                    action: toggle
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "on"
+                card:
+                  type: custom:mushroom-entity-card
+                  entity: switch.hp_main_switch
+                  name: Podlahovka
+                  icon: mdi:heating-coil
+                  tap_action:
+                    action: none
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "off"
+                card:
+                  type: custom:mushroom-select-card
+                  entity: input_select.hp_set_operation_mode
+                  name: Režim provozu
+                  icon: mdi:thermostat
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "on"
+                card:
+                  type: custom:mushroom-entity-card
+                  entity: input_select.hp_set_operation_mode
+                  name: Režim provozu
+                  icon: mdi:thermostat
+                  tap_action:
+                    action: none
+          - type: horizontal-stack
+            cards:
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "off"
+                card:
+                  type: custom:mushroom-entity-card
+                  entity: switch.hp_dhw
+                  name: Ohřev TUV
+                  icon: mdi:water-boiler
+                  tap_action:
+                    action: toggle
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "on"
+                card:
+                  type: custom:mushroom-entity-card
+                  entity: switch.hp_dhw
+                  name: Ohřev TUV
+                  icon: mdi:water-boiler
+                  tap_action:
+                    action: none
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "off"
+                card:
+                  type: custom:mushroom-entity-card
+                  entity: switch.hp_silent_mode
+                  name: Tichý režim
+                  icon: mdi:volume-off
+                  tap_action:
+                    action: toggle
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "on"
+                card:
+                  type: custom:mushroom-entity-card
+                  entity: switch.hp_silent_mode
+                  name: Tichý režim
+                  icon: mdi:volume-off
+                  tap_action:
+                    action: none
+          - type: horizontal-stack
+            cards:
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "off"
+                card:
+                  type: custom:mushroom-entity-card
+                  entity: input_boolean.hp_auto_silent_mode
+                  name: Auto tichý (jen topení)
+                  icon: mdi:volume-off
+                  tap_action:
+                    action: toggle
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "on"
+                card:
+                  type: custom:mushroom-entity-card
+                  entity: input_boolean.hp_auto_silent_mode
+                  name: Auto tichý (jen topení)
+                  icon: mdi:volume-off
+                  tap_action:
+                    action: none
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "off"
+                card:
+                  type: custom:mushroom-entity-card
+                  entity: switch.hp_dhw_desinfection_mode
+                  name: Dezinfekce TUV
+                  icon: mdi:bacteria
+                  tap_action:
+                    action: toggle
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: input_boolean.hp_dashboard_locked
+                    state: "on"
+                card:
+                  type: custom:mushroom-entity-card
+                  entity: switch.hp_dhw_desinfection_mode
+                  name: Dezinfekce TUV
+                  icon: mdi:bacteria
+                  tap_action:
+                    action: none
       - cards:
           - type: heading
             heading: Nastavení teplot
@@ -453,6 +483,9 @@ views:
               - entity: binary_sensor.hp_backup_heater_active
                 name: Záložní ohřev
                 icon: mdi:fire
+              - entity: binary_sensor.hp_silent_mode_status
+                name: Tichý režim
+                icon: mdi:volume-off
               - entity: binary_sensor.hp_error_status
                 name: Chybový stav
                 icon: mdi:alert-circle
@@ -608,11 +641,11 @@ views:
           - type: statistics-graph
             title: Starty kompresoru – historie
             entities:
-              - entity: sensor.hp_compressor_starts_today
+              - entity: sensor.hp_compressor_starts_total_sensor
                 name: Starty
             stat_types:
-              - max
+              - change
             period: day
-            days_to_show: 365
+            days_to_show: 30
             grid_options:
               columns: full

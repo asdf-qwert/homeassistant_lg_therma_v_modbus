@@ -628,6 +628,10 @@ input_boolean:
     name: "Zámek ovládání"
     icon: mdi:lock
 
+  hp_auto_silent_mode:
+    name: "Auto tichý režim (jen topení)"
+    icon: mdi:volume-off
+
 input_select:
   # Input Select
   # -----------------------------------------
@@ -696,6 +700,13 @@ template:
           {% else %}
             0
           {% endif %}
+
+      - name: "HP Compressor Starts Total"
+        unique_id: "hp_compressor_starts_total_sensor"
+        unit_of_measurement: "starts"
+        state_class: total_increasing
+        icon: mdi:counter
+        state: "{{ states('counter.hp_compressor_starts_total') | int(0) }}"
 
       - name: "HP COP"
         unique_id: "hp_cop"
@@ -1082,6 +1093,52 @@ automation:
 
   ### Topná křivka – aplikace setpointu ###
   #-------------------------------------------------------------------------------
+  ### Auto tichý režim – pouze při topení (ne TUV) ###
+  #-------------------------------------------------------------------------------
+  - alias: "hp_automation_auto_silent_mode_enable"
+    id: "hp_automation_auto_silent_mode_enable"
+    description: >
+      Zapne tichý režim, když se spustí kompresor a NEJDE o ohřev TUV.
+      Aktivuje se jen pokud je zapnutá funkce hp_auto_silent_mode.
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.hp_compressor_status
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.hp_auto_silent_mode
+        state: "on"
+      - condition: state
+        entity_id: binary_sensor.hp_dhw_heating_status
+        state: "off"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.hp_silent_mode
+    mode: single
+
+  - alias: "hp_automation_auto_silent_mode_disable"
+    id: "hp_automation_auto_silent_mode_disable"
+    description: >
+      Vypne tichý režim, když kompresor skončí nebo začne ohřev TUV.
+      Aktivuje se jen pokud je zapnutá funkce hp_auto_silent_mode.
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.hp_compressor_status
+        to: "off"
+      - platform: state
+        entity_id: binary_sensor.hp_dhw_heating_status
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.hp_auto_silent_mode
+        state: "on"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.hp_silent_mode
+    mode: single
+
   - alias: "hp_automation_compressor_start_counter"
     id: "hp_automation_compressor_start_counter"
     description: "Inkrementuje celkový počet startů kompresoru"
