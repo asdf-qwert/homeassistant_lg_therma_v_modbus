@@ -701,6 +701,13 @@ template:
             0
           {% endif %}
 
+      - name: "HP Compressor Starts Total"
+        unique_id: "hp_compressor_starts_total_sensor"
+        unit_of_measurement: "starts"
+        state_class: total_increasing
+        icon: mdi:counter
+        state: "{{ states('counter.hp_compressor_starts_total') | int(0) }}"
+
       - name: "HP COP"
         unique_id: "hp_cop"
         state_class: measurement
