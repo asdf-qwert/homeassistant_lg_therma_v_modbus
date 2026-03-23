@@ -729,6 +729,14 @@ template:
           {% set cop = states('sensor.hp_cop') | float(0) %}
           {{ cop if cop > 0 else none }}
 
+      - name: "HP SCOP"
+        unique_id: "hp_scop"
+        state_class: measurement
+        state: >
+          {% set thermal = states('sensor.hp_thermal_energy') | float(0) %}
+          {% set elec = states('sensor.hp_electrical_energy') | float(0) %}
+          {{ (thermal / elec) | round(2) if elec > 0 else 0 }}
+
       # --- Topná křivka ---
 
       - name: "HP Curve Design Temp"
@@ -1256,3 +1264,19 @@ sensor:
       minutes: 2
     sampling_size: 12
     precision: 2
+
+  - platform: integration
+    source: sensor.hp_thermal_power
+    name: "HP Thermal Energy"
+    unique_id: hp_thermal_energy
+    unit_prefix: k
+    method: left
+    round: 2
+
+  - platform: integration
+    source: sensor.shellypro3em_a4f00fcfb120_vykon
+    name: "HP Electrical Energy"
+    unique_id: hp_electrical_energy
+    unit_prefix: k
+    method: left
+    round: 2

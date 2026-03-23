@@ -12,7 +12,7 @@ views:
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "off"
+                state: 'off'
             card:
               type: custom:mushroom-entity-card
               entity: input_boolean.hp_dashboard_locked
@@ -25,7 +25,7 @@ views:
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "on"
+                state: 'on'
             card:
               type: custom:mushroom-entity-card
               entity: input_boolean.hp_dashboard_locked
@@ -40,7 +40,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "off"
+                    state: 'off'
                 card:
                   type: custom:mushroom-entity-card
                   entity: switch.hp_main_switch
@@ -52,7 +52,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "on"
+                    state: 'on'
                 card:
                   type: custom:mushroom-entity-card
                   entity: switch.hp_main_switch
@@ -64,7 +64,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "off"
+                    state: 'off'
                 card:
                   type: custom:mushroom-select-card
                   entity: input_select.hp_set_operation_mode
@@ -74,7 +74,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "on"
+                    state: 'on'
                 card:
                   type: custom:mushroom-entity-card
                   entity: input_select.hp_set_operation_mode
@@ -88,7 +88,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "off"
+                    state: 'off'
                 card:
                   type: custom:mushroom-entity-card
                   entity: switch.hp_dhw
@@ -100,7 +100,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "on"
+                    state: 'on'
                 card:
                   type: custom:mushroom-entity-card
                   entity: switch.hp_dhw
@@ -112,7 +112,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "off"
+                    state: 'off'
                 card:
                   type: custom:mushroom-entity-card
                   entity: switch.hp_silent_mode
@@ -124,7 +124,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "on"
+                    state: 'on'
                 card:
                   type: custom:mushroom-entity-card
                   entity: switch.hp_silent_mode
@@ -138,7 +138,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "off"
+                    state: 'off'
                 card:
                   type: custom:mushroom-entity-card
                   entity: input_boolean.hp_auto_silent_mode
@@ -150,7 +150,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "on"
+                    state: 'on'
                 card:
                   type: custom:mushroom-entity-card
                   entity: input_boolean.hp_auto_silent_mode
@@ -162,7 +162,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "off"
+                    state: 'off'
                 card:
                   type: custom:mushroom-entity-card
                   entity: switch.hp_dhw_desinfection_mode
@@ -174,7 +174,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "on"
+                    state: 'on'
                 card:
                   type: custom:mushroom-entity-card
                   entity: switch.hp_dhw_desinfection_mode
@@ -189,7 +189,7 @@ views:
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "off"
+                state: 'off'
             card:
               type: custom:mushroom-number-card
               entity: input_number.hp_dhw_target_temp
@@ -201,7 +201,7 @@ views:
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "on"
+                state: 'on'
             card:
               type: custom:mushroom-entity-card
               entity: input_number.hp_dhw_target_temp
@@ -213,7 +213,7 @@ views:
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "off"
+                state: 'off'
             card:
               type: custom:mushroom-number-card
               entity: input_number.hp_circuit1_target_temp
@@ -225,7 +225,7 @@ views:
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "on"
+                state: 'on'
             card:
               type: custom:mushroom-entity-card
               entity: input_number.hp_circuit1_target_temp
@@ -237,7 +237,7 @@ views:
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "off"
+                state: 'off'
             card:
               type: custom:mushroom-number-card
               entity: input_number.hp_shift_value_in_auto_mode_circuit1
@@ -249,7 +249,7 @@ views:
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "on"
+                state: 'on'
             card:
               type: custom:mushroom-entity-card
               entity: input_number.hp_shift_value_in_auto_mode_circuit1
@@ -308,6 +308,10 @@ views:
             name: COP
             icon: mdi:leaf
           - type: custom:mushroom-entity-card
+            entity: sensor.hp_scop
+            name: SCOP
+            icon: mdi:leaf-circle
+          - type: custom:mushroom-entity-card
             entity: sensor.hp_flow_rate
             name: Průtok vody
             icon: mdi:waves-arrow-right
@@ -326,7 +330,7 @@ views:
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "off"
+                state: 'off'
             card:
               type: custom:mushroom-entity-card
               entity: input_boolean.hp_heating_curve_enabled
@@ -338,7 +342,7 @@ views:
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "on"
+                state: 'on'
             card:
               type: custom:mushroom-entity-card
               entity: input_boolean.hp_heating_curve_enabled
@@ -350,34 +354,33 @@ views:
             title: Korekce
             entities:
               - entity: sensor.hp_outside_temp
-                name: "① Venkovní teplota"
+                name: ① Venkovní teplota
                 icon: mdi:thermometer
               - entity: sensor.hp_forecast_min_temp
-                name: "① Předpověď min."
+                name: ① Předpověď min.
                 icon: mdi:cloud-clock
               - entity: sensor.hp_curve_design_temp
-                name: "→ Návrhová teplota"
+                name: → Návrhová teplota
                 icon: mdi:thermometer-lines
               - entity: sensor.hp_curve_raw
-                name: "→ Křivka (před korekcemi)"
+                name: → Křivka (před korekcemi)
                 icon: mdi:chart-bell-curve
               - type: divider
               - entity: sensor.hp_solar_correction
-                name: "② Solární korekce"
+                name: ② Solární korekce
                 icon: mdi:white-balance-sunny
               - entity: sensor.hp_room_correction
-                name: "③ Korekce místnosti"
+                name: ③ Korekce místnosti
                 icon: mdi:home-thermometer
               - type: divider
               - entity: sensor.hp_heating_curve_setpoint
-                name: "→ Výsledná teplota vody"
+                name: → Výsledná teplota vody
                 icon: mdi:thermometer-auto
-
           - type: conditional
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "off"
+                state: 'off'
             card:
               type: entities
               title: Parametry křivky
@@ -407,12 +410,12 @@ views:
             conditions:
               - condition: state
                 entity: input_boolean.hp_dashboard_locked
-                state: "on"
+                state: 'on'
             card:
               type: vertical-stack
               cards:
                 - type: markdown
-                  content: "**Parametry křivky**"
+                  content: '**Parametry křivky**'
                 - type: custom:mushroom-entity-card
                   entity: input_number.hp_curve_shift
                   name: Posun křivky
@@ -455,7 +458,6 @@ views:
                   icon: mdi:thermometer-off
                   tap_action:
                     action: none
-
       - cards:
           - type: heading
             heading: Stav komponent
@@ -477,11 +479,8 @@ views:
               - entity: binary_sensor.hp_dhw_heating_status
                 name: Ohřev TUV
                 icon: mdi:water-boiler
-              - entity: binary_sensor.hp_cooling_status
-                name: Chlazení
-                icon: mdi:snowflake
-              - entity: binary_sensor.hp_backup_heater_active
-                name: Záložní ohřev
+              - entity: binary_sensor.hp_dhw_boost_heater_status
+                name: Elektrický ohřev TUV
                 icon: mdi:fire
               - entity: binary_sensor.hp_silent_mode_status
                 name: Tichý režim
@@ -510,6 +509,10 @@ views:
                 name: Místnost
               - entity: sensor.hp_dhw_water_temp
                 name: TUV
+              - entity: binary_sensor.hp_defrosting_status
+                name: ❄️
+              - entity: binary_sensor.hp_dhw_boost_heater_status
+                name: ♨️
             grid_options:
               columns: full
       - cards:
@@ -607,7 +610,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "off"
+                    state: 'off'
                 row:
                   entity: input_select.hp_set_control_method
                   name: Metoda řízení
@@ -616,7 +619,7 @@ views:
                 conditions:
                   - condition: state
                     entity: input_boolean.hp_dashboard_locked
-                    state: "on"
+                    state: 'on'
                 row:
                   entity: input_select.hp_set_control_method
                   name: Metoda řízení
@@ -641,7 +644,7 @@ views:
           - type: statistics-graph
             title: Starty kompresoru – historie
             entities:
-              - entity: sensor.hp_compressor_starts_total_sensor
+              - entity: sensor.hp_compressor_starts_total
                 name: Starty
             stat_types:
               - change
