@@ -692,7 +692,7 @@ template:
         state: >
           {% set compressor_on = is_state('binary_sensor.hp_compressor_status', 'on')
                               and (states('sensor.shellypro3em_a4f00fcfb120_phase_a_vykon') | float(0)
-                                 + states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0)) > 300 %}
+                                 + states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0)) > 100 %}
           {% set flow = states('sensor.hp_flow_rate') | float(0) %}
           {% set dt = states('sensor.hp_delta_temp') | float(0) %}
           {% if compressor_on and flow > 0 and dt > 0 %}
@@ -716,8 +716,11 @@ template:
           {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
           {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_phase_a_vykon') | float(0)
                         + states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0) %}
-          {% if compressor_on and p_thermal > 0 and p_elec > 300 %}
-            {{ (p_thermal / p_elec) | round(2) }}
+          {% if compressor_on and p_thermal > 0 and p_elec > 100 %}
+            {% set t_hot = states('sensor.hp_outlet_temp') | float(0) + 273.15 %}
+            {% set t_cold = states('sensor.hp_outside_temp') | float(0) + 273.15 %}
+            {% set carnot = (t_hot / (t_hot - t_cold)) if (t_hot - t_cold) > 0 else 999 %}
+            {{ [p_thermal / p_elec, carnot] | min | round(2) }}
           {% else %}
             0
           {% endif %}

@@ -513,6 +513,14 @@ views:
                 name: ❄️
               - entity: binary_sensor.hp_dhw_boost_heater_status
                 name: ♨️
+              - entity: binary_sensor.hp_dhw_heating_status
+                name: 🚿
+              - entity: binary_sensor.hp_silent_mode_status
+                name: 🔇
+              - entity: binary_sensor.hp_compressor_status
+                name: ⚙️
+              - entity: sensor.hp_thermal_power
+              - entity: sensor.hp_cop
             grid_options:
               columns: full
       - cards:
