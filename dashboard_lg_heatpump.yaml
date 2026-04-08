@@ -182,30 +182,6 @@ views:
                   icon: mdi:bacteria
                   tap_action:
                     action: none
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: 'off'
-            card:
-              type: custom:mushroom-entity-card
-              entity: input_boolean.hp_dhw_tariff_control
-              name: Řízení TUV tarifem
-              icon: mdi:cash-clock
-              tap_action:
-                action: toggle
-          - type: conditional
-            conditions:
-              - condition: state
-                entity: input_boolean.hp_dashboard_locked
-                state: 'on'
-            card:
-              type: custom:mushroom-entity-card
-              entity: input_boolean.hp_dhw_tariff_control
-              name: Řízení TUV tarifem
-              icon: mdi:cash-clock
-              tap_action:
-                action: none
       - cards:
           - type: heading
             heading: Nastavení teplot
@@ -528,9 +504,6 @@ views:
               - entity: binary_sensor.hp_error_status
                 name: Chybový stav
                 icon: mdi:alert-circle
-              - entity: binary_sensor.hp_high_tariff
-                name: Vysoký tarif
-                icon: mdi:cash-clock
   - title: Diagnostika
     icon: mdi:chart-line
     type: sections
