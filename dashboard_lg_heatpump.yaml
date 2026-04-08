@@ -653,6 +653,32 @@ views:
             days_to_show: 30
             grid_options:
               columns: full
+          - type: statistics-graph
+            title: COP TUV průměr
+            entities:
+              - entity: sensor.hp_cop_dhw
+                name: COP TUV
+              - entity: sensor.hp_outside_temp
+                name: Venkovní teplota
+            stat_types:
+              - mean
+            period: day
+            days_to_show: 30
+            grid_options:
+              columns: full
+          - type: statistics-graph
+            title: COP topení průměr
+            entities:
+              - entity: sensor.hp_cop_heating
+                name: COP topení
+              - entity: sensor.hp_outside_temp
+                name: Venkovní teplota
+            stat_types:
+              - mean
+            period: day
+            days_to_show: 30
+            grid_options:
+              columns: full
       - column_span: 4
         cards:
           - type: heading
