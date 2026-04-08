@@ -592,6 +592,53 @@ views:
       - column_span: 4
         cards:
           - type: heading
+            heading: Spotřeba energie
+          - type: entities
+            title: TUV
+            entities:
+              - entity: sensor.hp_electricity_dhw_daily
+                name: Dnes
+                icon: mdi:calendar-today
+              - entity: sensor.hp_electricity_dhw_weekly
+                name: Tento týden
+                icon: mdi:calendar-week
+              - entity: sensor.hp_electricity_dhw_monthly
+                name: Tento měsíc
+                icon: mdi:calendar-month
+              - entity: sensor.hp_electricity_dhw_yearly
+                name: Tento rok
+                icon: mdi:calendar
+          - type: entities
+            title: Topení
+            entities:
+              - entity: sensor.hp_electricity_heating_daily
+                name: Dnes
+                icon: mdi:calendar-today
+              - entity: sensor.hp_electricity_heating_weekly
+                name: Tento týden
+                icon: mdi:calendar-week
+              - entity: sensor.hp_electricity_heating_monthly
+                name: Tento měsíc
+                icon: mdi:calendar-month
+              - entity: sensor.hp_electricity_heating_yearly
+                name: Tento rok
+                icon: mdi:calendar
+          - type: statistics-graph
+            title: Spotřeba – historie
+            entities:
+              - entity: sensor.hp_electricity_dhw_daily
+                name: TUV
+              - entity: sensor.hp_electricity_heating_daily
+                name: Topení
+            stat_types:
+              - sum
+            period: day
+            days_to_show: 30
+            grid_options:
+              columns: full
+      - column_span: 4
+        cards:
+          - type: heading
             heading: COP statistiky
           - type: statistics-graph
             title: COP průměr

@@ -1402,3 +1402,50 @@ sensor:
     unit_prefix: k
     method: left
     round: 2
+
+
+##############################################################
+# UTILITY METERS — periodická spotřeba energie
+##############################################################
+utility_meter:
+  # --- TUV ---
+  hp_electricity_dhw_daily:
+    source: sensor.hp_electrical_energy_dhw
+    cycle: daily
+    name: "HP Spotřeba TUV – dnes"
+
+  hp_electricity_dhw_weekly:
+    source: sensor.hp_electrical_energy_dhw
+    cycle: weekly
+    name: "HP Spotřeba TUV – týden"
+
+  hp_electricity_dhw_monthly:
+    source: sensor.hp_electrical_energy_dhw
+    cycle: monthly
+    name: "HP Spotřeba TUV – měsíc"
+
+  hp_electricity_dhw_yearly:
+    source: sensor.hp_electrical_energy_dhw
+    cycle: yearly
+    name: "HP Spotřeba TUV – rok"
+
+  # --- Topení ---
+  hp_electricity_heating_daily:
+    source: sensor.hp_electrical_energy_heating
+    cycle: daily
+    name: "HP Spotřeba topení – dnes"
+
+  hp_electricity_heating_weekly:
+    source: sensor.hp_electrical_energy_heating
+    cycle: weekly
+    name: "HP Spotřeba topení – týden"
+
+  hp_electricity_heating_monthly:
+    source: sensor.hp_electrical_energy_heating
+    cycle: monthly
+    name: "HP Spotřeba topení – měsíc"
+
+  hp_electricity_heating_yearly:
+    source: sensor.hp_electrical_energy_heating
+    cycle: yearly
+    name: "HP Spotřeba topení – rok"
