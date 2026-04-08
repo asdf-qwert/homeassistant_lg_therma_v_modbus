@@ -317,33 +317,6 @@ views:
             icon: mdi:alert
       - cards:
           - type: heading
-            heading: COP & SCOP
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_cop
-            name: COP
-            icon: mdi:leaf
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_cop_dhw
-            name: COP (TUV)
-            icon: mdi:leaf
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_cop_heating
-            name: COP (topení)
-            icon: mdi:leaf
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_scop
-            name: SCOP
-            icon: mdi:leaf-circle
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_scop_dhw
-            name: SCOP (TUV)
-            icon: mdi:leaf-circle
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_scop_heating
-            name: SCOP (topení)
-            icon: mdi:leaf-circle
-      - cards:
-          - type: heading
             heading: Topná křivka
           - type: conditional
             conditions:
@@ -507,6 +480,33 @@ views:
               - entity: binary_sensor.hp_error_status
                 name: Chybový stav
                 icon: mdi:alert-circle
+      - cards:
+          - type: heading
+            heading: COP & SCOP
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_cop
+            name: COP
+            icon: mdi:leaf
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_cop_dhw
+            name: COP (TUV)
+            icon: mdi:leaf
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_cop_heating
+            name: COP (topení)
+            icon: mdi:leaf
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_scop
+            name: SCOP
+            icon: mdi:leaf-circle
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_scop_dhw
+            name: SCOP (TUV)
+            icon: mdi:leaf-circle
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_scop_heating
+            name: SCOP (topení)
+            icon: mdi:leaf-circle
   - title: Diagnostika
     icon: mdi:chart-line
     type: sections
