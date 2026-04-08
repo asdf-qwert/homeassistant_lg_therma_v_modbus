@@ -708,6 +708,14 @@ template:
         icon: mdi:counter
         state: "{{ states('counter.hp_compressor_starts_total') | int(0) }}"
 
+      - name: "HP COP Carnot"
+        unique_id: "hp_cop_carnot"
+        state_class: measurement
+        state: >
+          {% set t_hot = states('sensor.hp_outlet_temp') | float(0) + 273.15 %}
+          {% set t_cold = states('sensor.hp_outside_temp') | float(0) + 273.15 %}
+          {{ (t_hot / (t_hot - t_cold)) | round(2) if (t_hot - t_cold) > 0 else 999 }}
+
       - name: "HP COP"
         unique_id: "hp_cop"
         state_class: measurement
@@ -717,10 +725,7 @@ template:
           {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_phase_a_vykon') | float(0)
                         + states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0) %}
           {% if compressor_on and p_thermal > 0 and p_elec > 100 %}
-            {% set t_hot = states('sensor.hp_outlet_temp') | float(0) + 273.15 %}
-            {% set t_cold = states('sensor.hp_outside_temp') | float(0) + 273.15 %}
-            {% set carnot = (t_hot / (t_hot - t_cold)) if (t_hot - t_cold) > 0 else 999 %}
-            {{ [p_thermal / p_elec, carnot] | min | round(2) }}
+            {{ [p_thermal / p_elec, states('sensor.hp_cop_carnot') | float(999)] | min | round(2) }}
           {% else %}
             0
           {% endif %}
@@ -734,10 +739,7 @@ template:
           {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
           {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0) %}
           {% if compressor_on and dhw_on and p_thermal > 0 and p_elec > 100 %}
-            {% set t_hot = states('sensor.hp_outlet_temp') | float(0) + 273.15 %}
-            {% set t_cold = states('sensor.hp_outside_temp') | float(0) + 273.15 %}
-            {% set carnot = (t_hot / (t_hot - t_cold)) if (t_hot - t_cold) > 0 else 999 %}
-            {{ [p_thermal / p_elec, carnot] | min | round(2) }}
+            {{ [p_thermal / p_elec, states('sensor.hp_cop_carnot') | float(999)] | min | round(2) }}
           {% else %}
             0
           {% endif %}
@@ -751,10 +753,7 @@ template:
           {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
           {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0) %}
           {% if compressor_on and dhw_off and p_thermal > 0 and p_elec > 100 %}
-            {% set t_hot = states('sensor.hp_outlet_temp') | float(0) + 273.15 %}
-            {% set t_cold = states('sensor.hp_outside_temp') | float(0) + 273.15 %}
-            {% set carnot = (t_hot / (t_hot - t_cold)) if (t_hot - t_cold) > 0 else 999 %}
-            {{ [p_thermal / p_elec, carnot] | min | round(2) }}
+            {{ [p_thermal / p_elec, states('sensor.hp_cop_carnot') | float(999)] | min | round(2) }}
           {% else %}
             0
           {% endif %}
