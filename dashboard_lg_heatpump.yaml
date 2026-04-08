@@ -596,39 +596,39 @@ views:
           - type: entities
             title: TUV
             entities:
-              - entity: sensor.hp_electricity_dhw_daily
+              - entity: sensor.hp_spotreba_tuv_dnes
                 name: Dnes
                 icon: mdi:calendar-today
-              - entity: sensor.hp_electricity_dhw_weekly
+              - entity: sensor.hp_spotreba_tuv_tyden
                 name: Tento týden
                 icon: mdi:calendar-week
-              - entity: sensor.hp_electricity_dhw_monthly
+              - entity: sensor.hp_spotreba_tuv_mesic
                 name: Tento měsíc
                 icon: mdi:calendar-month
-              - entity: sensor.hp_electricity_dhw_yearly
+              - entity: sensor.hp_spotreba_tuv_rok
                 name: Tento rok
                 icon: mdi:calendar
           - type: entities
             title: Topení
             entities:
-              - entity: sensor.hp_electricity_heating_daily
+              - entity: sensor.hp_spotreba_topeni_dnes
                 name: Dnes
                 icon: mdi:calendar-today
-              - entity: sensor.hp_electricity_heating_weekly
+              - entity: sensor.hp_spotreba_topeni_tyden
                 name: Tento týden
                 icon: mdi:calendar-week
-              - entity: sensor.hp_electricity_heating_monthly
+              - entity: sensor.hp_spotreba_topeni_mesic
                 name: Tento měsíc
                 icon: mdi:calendar-month
-              - entity: sensor.hp_electricity_heating_yearly
+              - entity: sensor.hp_spotreba_topeni_rok
                 name: Tento rok
                 icon: mdi:calendar
           - type: statistics-graph
             title: Spotřeba – historie
             entities:
-              - entity: sensor.hp_electricity_dhw_daily
+              - entity: sensor.hp_spotreba_tuv_dnes
                 name: TUV
-              - entity: sensor.hp_electricity_heating_daily
+              - entity: sensor.hp_spotreba_topeni_dnes
                 name: Topení
             stat_types:
               - sum
