@@ -304,6 +304,21 @@ views:
             name: Tepelný výkon
             icon: mdi:fire
           - type: custom:mushroom-entity-card
+            entity: sensor.hp_flow_rate
+            name: Průtok vody
+            icon: mdi:waves-arrow-right
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_compressor_rpm
+            name: Otáčky kompresoru
+            icon: mdi:rotate-3d-variant
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_error_code
+            name: Kód chyby
+            icon: mdi:alert
+      - cards:
+          - type: heading
+            heading: COP & SCOP
+          - type: custom:mushroom-entity-card
             entity: sensor.hp_cop
             name: COP
             icon: mdi:leaf
@@ -327,18 +342,6 @@ views:
             entity: sensor.hp_scop_heating
             name: SCOP (topení)
             icon: mdi:leaf-circle
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_flow_rate
-            name: Průtok vody
-            icon: mdi:waves-arrow-right
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_compressor_rpm
-            name: Otáčky kompresoru
-            icon: mdi:rotate-3d-variant
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_error_code
-            name: Kód chyby
-            icon: mdi:alert
       - cards:
           - type: heading
             heading: Topná křivka
