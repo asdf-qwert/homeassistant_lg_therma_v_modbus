@@ -535,6 +535,13 @@ input_number:
     max: 60
     step: 1
 
+  hp_dhw_target_saved:
+    name: "TUV – uložená cílová teplota"
+    min: 40
+    max: 60
+    step: 0.5
+    unit_of_measurement: "°C"
+
   # --- Topná křivka ---
   hp_curve_point1_outdoor:
     name: "Topná křivka – bod 1 venkovní teplota (teplý)"
@@ -632,6 +639,14 @@ input_boolean:
     name: "Auto tichý režim (jen topení)"
     icon: mdi:volume-off
 
+  hp_dhw_tariff_control:
+    name: "TUV – řízení tarifem"
+    icon: mdi:cash-clock
+
+  hp_dhw_auto_off:
+    name: "TUV – automaticky vypnuto (tarif)"
+    icon: mdi:water-boiler-off
+
 input_select:
   # Input Select
   # -----------------------------------------
@@ -658,6 +673,13 @@ template:
         device_class: heat
         state: >
           {{ states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0) > 50 }}
+
+      - name: "HP High Tariff"
+        unique_id: "hp_high_tariff"
+        icon: mdi:cash-clock
+        state: >
+          {% set t = now().hour * 100 + now().minute %}
+          {{ (611 <= t < 710) or (1116 <= t < 1215) or (1546 <= t < 1645) or (2006 <= t < 2105) }}
 
   - sensor:
       - name: "HP Energy State"
@@ -1235,6 +1257,106 @@ automation:
       - service: switch.turn_off
         target:
           entity_id: switch.hp_silent_mode
+    mode: single
+
+  ### TUV tarif – předehřev ###
+  #-------------------------------------------------------------------------------
+  - alias: "hp_automation_dhw_preheat"
+    id: "hp_automation_dhw_preheat"
+    description: >
+      45 min před vysokým tarifem uloží cílovou teplotu TUV, zvýší ji o 5°C
+      a zapne ohřev TUV (aby se stihla dohřát před tarifem).
+    trigger:
+      - platform: time
+        at: "05:26:00"
+      - platform: time
+        at: "10:31:00"
+      - platform: time
+        at: "15:01:00"
+      - platform: time
+        at: "19:21:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.hp_dhw_tariff_control
+        state: "on"
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.hp_dhw_target_saved
+        data:
+          value: "{{ states('input_number.hp_dhw_target_temp') | float(48) }}"
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.hp_dhw_target_temp
+        data:
+          value: "{{ [states('input_number.hp_dhw_target_temp') | float(48) + 5, 60] | min }}"
+      - service: switch.turn_on
+        target:
+          entity_id: switch.hp_dhw
+    mode: single
+
+  ### TUV tarif – start vysokého tarifu ###
+  #-------------------------------------------------------------------------------
+  - alias: "hp_automation_dhw_high_tariff_start"
+    id: "hp_automation_dhw_high_tariff_start"
+    description: >
+      Při startu vysokého tarifu uloží stav DHW switche, obnoví původní cílovou
+      teplotu TUV a vypne ohřev TUV.
+    trigger:
+      - platform: time
+        at: "06:11:00"
+      - platform: time
+        at: "11:16:00"
+      - platform: time
+        at: "15:46:00"
+      - platform: time
+        at: "20:06:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.hp_dhw_tariff_control
+        state: "on"
+    action:
+      - service: input_boolean.set_value
+        target:
+          entity_id: input_boolean.hp_dhw_auto_off
+        data:
+          value: "{{ is_state('switch.hp_dhw', 'on') }}"
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.hp_dhw_target_temp
+        data:
+          value: "{{ states('input_number.hp_dhw_target_saved') | float(48) }}"
+      - service: switch.turn_off
+        target:
+          entity_id: switch.hp_dhw
+    mode: single
+
+  ### TUV tarif – konec vysokého tarifu ###
+  #-------------------------------------------------------------------------------
+  - alias: "hp_automation_dhw_high_tariff_end"
+    id: "hp_automation_dhw_high_tariff_end"
+    description: >
+      Při konci vysokého tarifu obnoví ohřev TUV, pokud byl zapnutý před tarifem.
+    trigger:
+      - platform: time
+        at: "07:10:00"
+      - platform: time
+        at: "12:15:00"
+      - platform: time
+        at: "16:45:00"
+      - platform: time
+        at: "21:05:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.hp_dhw_tariff_control
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.hp_dhw_auto_off
+        state: "on"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.hp_dhw
     mode: single
 
   - alias: "hp_automation_compressor_start_counter"
