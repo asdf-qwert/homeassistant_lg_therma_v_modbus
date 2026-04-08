@@ -725,6 +725,94 @@ template:
             0
           {% endif %}
 
+      - name: "HP COP DHW"
+        unique_id: "hp_cop_dhw"
+        state_class: measurement
+        state: >
+          {% set compressor_on = is_state('binary_sensor.hp_compressor_status', 'on') %}
+          {% set dhw_on = is_state('binary_sensor.hp_dhw_heating_status', 'on') %}
+          {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
+          {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0) %}
+          {% if compressor_on and dhw_on and p_thermal > 0 and p_elec > 100 %}
+            {% set t_hot = states('sensor.hp_outlet_temp') | float(0) + 273.15 %}
+            {% set t_cold = states('sensor.hp_outside_temp') | float(0) + 273.15 %}
+            {% set carnot = (t_hot / (t_hot - t_cold)) if (t_hot - t_cold) > 0 else 999 %}
+            {{ [p_thermal / p_elec, carnot] | min | round(2) }}
+          {% else %}
+            0
+          {% endif %}
+
+      - name: "HP COP Heating"
+        unique_id: "hp_cop_heating"
+        state_class: measurement
+        state: >
+          {% set compressor_on = is_state('binary_sensor.hp_compressor_status', 'on') %}
+          {% set dhw_off = is_state('binary_sensor.hp_dhw_heating_status', 'off') %}
+          {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
+          {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0) %}
+          {% if compressor_on and dhw_off and p_thermal > 0 and p_elec > 100 %}
+            {% set t_hot = states('sensor.hp_outlet_temp') | float(0) + 273.15 %}
+            {% set t_cold = states('sensor.hp_outside_temp') | float(0) + 273.15 %}
+            {% set carnot = (t_hot / (t_hot - t_cold)) if (t_hot - t_cold) > 0 else 999 %}
+            {{ [p_thermal / p_elec, carnot] | min | round(2) }}
+          {% else %}
+            0
+          {% endif %}
+
+      - name: "HP Thermal Power DHW"
+        unique_id: "hp_thermal_power_dhw"
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        state: >
+          {{ states('sensor.hp_thermal_power') | float(0)
+             if is_state('binary_sensor.hp_dhw_heating_status', 'on') else 0 }}
+
+      - name: "HP Thermal Power Heating"
+        unique_id: "hp_thermal_power_heating"
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        state: >
+          {{ states('sensor.hp_thermal_power') | float(0)
+             if is_state('binary_sensor.hp_dhw_heating_status', 'off')
+             and is_state('binary_sensor.hp_compressor_status', 'on') else 0 }}
+
+      - name: "HP Electrical Power DHW"
+        unique_id: "hp_electrical_power_dhw"
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        state: >
+          {{ states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0)
+             if is_state('binary_sensor.hp_dhw_heating_status', 'on') else 0 }}
+
+      - name: "HP Electrical Power Heating"
+        unique_id: "hp_electrical_power_heating"
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        state: >
+          {{ states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0)
+             if is_state('binary_sensor.hp_dhw_heating_status', 'off')
+             and is_state('binary_sensor.hp_compressor_status', 'on') else 0 }}
+
+      - name: "HP SCOP DHW"
+        unique_id: "hp_scop_dhw"
+        state_class: measurement
+        state: >
+          {% set thermal = states('sensor.hp_thermal_energy_dhw') | float(0) %}
+          {% set elec = states('sensor.hp_electrical_energy_dhw') | float(0) %}
+          {{ (thermal / elec) | round(2) if elec > 0 else 0 }}
+
+      - name: "HP SCOP Heating"
+        unique_id: "hp_scop_heating"
+        state_class: measurement
+        state: >
+          {% set thermal = states('sensor.hp_thermal_energy_heating') | float(0) %}
+          {% set elec = states('sensor.hp_electrical_energy_heating') | float(0) %}
+          {{ (thermal / elec) | round(2) if elec > 0 else 0 }}
+
       - name: "HP COP stats"
         unique_id: "hp_cop_stats"
         state_class: measurement
@@ -1280,6 +1368,38 @@ sensor:
     source: sensor.shellypro3em_a4f00fcfb120_vykon
     name: "HP Electrical Energy"
     unique_id: hp_electrical_energy
+    unit_prefix: k
+    method: left
+    round: 2
+
+  - platform: integration
+    source: sensor.hp_thermal_power_dhw
+    name: "HP Thermal Energy DHW"
+    unique_id: hp_thermal_energy_dhw
+    unit_prefix: k
+    method: left
+    round: 2
+
+  - platform: integration
+    source: sensor.hp_thermal_power_heating
+    name: "HP Thermal Energy Heating"
+    unique_id: hp_thermal_energy_heating
+    unit_prefix: k
+    method: left
+    round: 2
+
+  - platform: integration
+    source: sensor.hp_electrical_power_dhw
+    name: "HP Electrical Energy DHW"
+    unique_id: hp_electrical_energy_dhw
+    unit_prefix: k
+    method: left
+    round: 2
+
+  - platform: integration
+    source: sensor.hp_electrical_power_heating
+    name: "HP Electrical Energy Heating"
+    unique_id: hp_electrical_energy_heating
     unit_prefix: k
     method: left
     round: 2
