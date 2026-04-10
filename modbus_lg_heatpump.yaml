@@ -741,7 +741,7 @@ template:
           {% if compressor_on and dhw_on and p_thermal > 0 and p_elec > 100 %}
             {{ [p_thermal / p_elec, states('sensor.hp_cop_carnot') | float(999)] | min | round(2) }}
           {% else %}
-            {{ none }}
+            0
           {% endif %}
 
       - name: "HP COP Heating"
@@ -755,7 +755,7 @@ template:
           {% if compressor_on and dhw_off and p_thermal > 0 and p_elec > 100 %}
             {{ [p_thermal / p_elec, states('sensor.hp_cop_carnot') | float(999)] | min | round(2) }}
           {% else %}
-            {{ none }}
+            0
           {% endif %}
 
       - name: "HP Thermal Power DHW"
@@ -817,6 +817,20 @@ template:
         state_class: measurement
         state: >
           {% set cop = states('sensor.hp_cop') | float(0) %}
+          {{ cop if cop > 0 else none }}
+
+      - name: "HP COP DHW stats"
+        unique_id: "hp_cop_dhw_stats"
+        state_class: measurement
+        state: >
+          {% set cop = states('sensor.hp_cop_dhw') | float(0) %}
+          {{ cop if cop > 0 else none }}
+
+      - name: "HP COP Heating stats"
+        unique_id: "hp_cop_heating_stats"
+        state_class: measurement
+        state: >
+          {% set cop = states('sensor.hp_cop_heating') | float(0) %}
           {{ cop if cop > 0 else none }}
 
       - name: "HP SCOP"

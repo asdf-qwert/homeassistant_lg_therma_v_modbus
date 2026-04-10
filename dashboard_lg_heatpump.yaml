@@ -317,6 +317,62 @@ views:
             icon: mdi:alert
       - cards:
           - type: heading
+            heading: COP & SCOP
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_cop
+            name: COP
+            icon: mdi:leaf
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_scop
+            name: SCOP
+            icon: mdi:leaf-circle
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_cop_heating
+            name: COP (topení)
+            icon: mdi:leaf
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_scop_heating
+            name: SCOP (topení)
+            icon: mdi:leaf-circle
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_cop_dhw
+            name: COP (TUV)
+            icon: mdi:leaf
+          - type: custom:mushroom-entity-card
+            entity: sensor.hp_scop_dhw
+            name: SCOP (TUV)
+            icon: mdi:leaf-circle
+          - type: heading
+            heading: Stav komponent
+          - type: glance
+            show_state: false
+            entities:
+              - entity: binary_sensor.hp_compressor_status
+                name: Kompresor
+                icon: mdi:engine
+              - entity: binary_sensor.hp_water_pump_status
+                name: Vodní čerpadlo
+                icon: mdi:pump
+              - entity: binary_sensor.hp_ext_water_pump_status
+                name: Ext. čerpadlo
+                icon: mdi:pump-off
+              - entity: binary_sensor.hp_defrosting_status
+                name: Odmrazování
+                icon: mdi:snowflake-melt
+              - entity: binary_sensor.hp_dhw_heating_status
+                name: Ohřev TUV
+                icon: mdi:water-boiler
+              - entity: binary_sensor.hp_dhw_boost_heater_status
+                name: Elektrický ohřev TUV
+                icon: mdi:fire
+              - entity: binary_sensor.hp_silent_mode_status
+                name: Tichý režim
+                icon: mdi:volume-off
+              - entity: binary_sensor.hp_error_status
+                name: Chybový stav
+                icon: mdi:alert-circle
+      - cards:
+          - type: heading
             heading: Topná křivka
           - type: conditional
             conditions:
@@ -450,62 +506,6 @@ views:
                   icon: mdi:thermometer-off
                   tap_action:
                     action: none
-      - cards:
-          - type: heading
-            heading: Stav komponent
-          - type: glance
-            show_state: false
-            entities:
-              - entity: binary_sensor.hp_compressor_status
-                name: Kompresor
-                icon: mdi:engine
-              - entity: binary_sensor.hp_water_pump_status
-                name: Vodní čerpadlo
-                icon: mdi:pump
-              - entity: binary_sensor.hp_ext_water_pump_status
-                name: Ext. čerpadlo
-                icon: mdi:pump-off
-              - entity: binary_sensor.hp_defrosting_status
-                name: Odmrazování
-                icon: mdi:snowflake-melt
-              - entity: binary_sensor.hp_dhw_heating_status
-                name: Ohřev TUV
-                icon: mdi:water-boiler
-              - entity: binary_sensor.hp_dhw_boost_heater_status
-                name: Elektrický ohřev TUV
-                icon: mdi:fire
-              - entity: binary_sensor.hp_silent_mode_status
-                name: Tichý režim
-                icon: mdi:volume-off
-              - entity: binary_sensor.hp_error_status
-                name: Chybový stav
-                icon: mdi:alert-circle
-          - type: heading
-            heading: COP & SCOP
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_cop
-            name: COP
-            icon: mdi:leaf
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_cop_dhw
-            name: COP (TUV)
-            icon: mdi:leaf
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_cop_heating
-            name: COP (topení)
-            icon: mdi:leaf
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_scop
-            name: SCOP
-            icon: mdi:leaf-circle
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_scop_dhw
-            name: SCOP (TUV)
-            icon: mdi:leaf-circle
-          - type: custom:mushroom-entity-card
-            entity: sensor.hp_scop_heating
-            name: SCOP (topení)
-            icon: mdi:leaf-circle
   - title: Diagnostika
     icon: mdi:chart-line
     type: sections
@@ -628,10 +628,10 @@ views:
           - type: statistics-graph
             title: Spotřeba – historie
             entities:
-              - entity: sensor.hp_spotreba_tuv_dnes
-                name: TUV
               - entity: sensor.hp_spotreba_topeni_dnes
                 name: Topení
+              - entity: sensor.hp_spotreba_tuv_dnes
+                name: TUV
             stat_types:
               - sum
             period: day
@@ -658,7 +658,7 @@ views:
           - type: statistics-graph
             title: COP TUV průměr
             entities:
-              - entity: sensor.hp_cop_dhw
+              - entity: sensor.hp_cop_dhw_stats
                 name: COP TUV
               - entity: sensor.hp_outside_temp
                 name: Venkovní teplota
@@ -671,7 +671,7 @@ views:
           - type: statistics-graph
             title: COP topení průměr
             entities:
-              - entity: sensor.hp_cop_heating
+              - entity: sensor.hp_cop_heating_stats
                 name: COP topení
               - entity: sensor.hp_outside_temp
                 name: Venkovní teplota
