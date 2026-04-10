@@ -632,6 +632,10 @@ input_boolean:
     name: "Auto tichý režim (jen topení)"
     icon: mdi:volume-off
 
+  hp_fireplace_mode:
+    name: "Krb – pauza podlahy"
+    icon: mdi:fireplace
+
 input_select:
   # Input Select
   # -----------------------------------------
@@ -1249,6 +1253,44 @@ automation:
       - service: switch.turn_off
         target:
           entity_id: switch.hp_silent_mode
+    mode: single
+
+  ### Krb – pauza podlahového topení ###
+  #-------------------------------------------------------------------------------
+  - alias: "hp_automation_fireplace_mode_on"
+    id: "hp_automation_fireplace_mode_on"
+    description: "Při zapnutí krb módu okamžitě vypne podlahové topení."
+    trigger:
+      - platform: state
+        entity_id: input_boolean.hp_fireplace_mode
+        to: "on"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.hp_main_switch
+    mode: single
+
+  - alias: "hp_automation_fireplace_mode_resume"
+    id: "hp_automation_fireplace_mode_resume"
+    description: "Jakmile teplota místnosti klesne na cílovou, obnoví topení a vypne krb mód."
+    trigger:
+      - platform: state
+        entity_id: sensor.hp_room_temp
+    condition:
+      - condition: state
+        entity_id: input_boolean.hp_fireplace_mode
+        state: "on"
+      - condition: template
+        value_template: >
+          {{ states('sensor.hp_room_temp') | float(99) <=
+             states('input_number.hp_room_target_temp') | float(21) }}
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.hp_main_switch
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.hp_fireplace_mode
     mode: single
 
   - alias: "hp_automation_compressor_start_counter"
