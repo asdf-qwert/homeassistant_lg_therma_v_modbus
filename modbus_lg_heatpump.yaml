@@ -741,7 +741,7 @@ template:
           {% if compressor_on and dhw_on and p_thermal > 0 and p_elec > 100 %}
             {{ [p_thermal / p_elec, states('sensor.hp_cop_carnot') | float(999)] | min | round(2) }}
           {% else %}
-            0
+            {{ none }}
           {% endif %}
 
       - name: "HP COP Heating"
@@ -755,7 +755,7 @@ template:
           {% if compressor_on and dhw_off and p_thermal > 0 and p_elec > 100 %}
             {{ [p_thermal / p_elec, states('sensor.hp_cop_carnot') | float(999)] | min | round(2) }}
           {% else %}
-            0
+            {{ none }}
           {% endif %}
 
       - name: "HP Thermal Power DHW"
