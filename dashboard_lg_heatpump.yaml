@@ -285,7 +285,7 @@ views:
           - type: heading
             heading: Aktuální teploty
           - type: custom:mushroom-entity-card
-            entity: sensor.hp_outside_temp
+            entity: sensor.hp_outside_temp_filtered
             name: Venkovní teplota
             icon: mdi:thermometer
           - type: custom:mushroom-entity-card
@@ -636,6 +636,9 @@ views:
               - entity: sensor.hp_spotreba_tuv_rok
                 name: Tento rok
                 icon: mdi:calendar
+            grid_options:
+              columns: 8
+              rows: auto
           - type: entities
             title: Topení
             entities:
@@ -651,16 +654,40 @@ views:
               - entity: sensor.hp_spotreba_topeni_rok
                 name: Tento rok
                 icon: mdi:calendar
-          - type: statistics-graph
+            grid_options:
+              columns: 8
+              rows: auto
+          - type: entities
+            title: Ostatní (bez kompresoru)
+            entities:
+              - entity: sensor.hp_spotreba_ostatni_dnes
+                name: Dnes
+                icon: mdi:calendar-today
+              - entity: sensor.hp_spotreba_ostatni_tyden
+                name: Tento týden
+                icon: mdi:calendar-week
+              - entity: sensor.hp_spotreba_ostatni_mesic
+                name: Tento měsíc
+                icon: mdi:calendar-month
+              - entity: sensor.hp_spotreba_ostatni_rok
+                name: Tento rok
+                icon: mdi:calendar
+            grid_options:
+              columns: 8
+              rows: auto
+          - chart_type: bar
+            period: day
+            type: statistics-graph
             title: Spotřeba – historie
             entities:
-              - entity: sensor.hp_spotreba_topeni_dnes
+              - entity: sensor.hp_electrical_energy_heating
                 name: Topení
-              - entity: sensor.hp_spotreba_tuv_dnes
+              - entity: sensor.hp_electrical_energy_dhw
                 name: TUV
+              - entity: sensor.hp_electrical_energy_other
+                name: Ostatní
             stat_types:
-              - sum
-            period: day
+              - change
             days_to_show: 30
             grid_options:
               columns: full
@@ -668,45 +695,23 @@ views:
         cards:
           - type: heading
             heading: COP statistiky
-          - type: statistics-graph
+          - chart_type: bar
+            period: day
+            type: statistics-graph
             title: COP průměr
             entities:
               - entity: sensor.hp_cop_stats
                 name: COP
-              - entity: sensor.hp_outside_temp
-                name: Venkovní teplota
+              - sensor.hp_cop_dhw_stats
+              - sensor.hp_cop_heating_stats
             stat_types:
               - mean
-            period: day
             days_to_show: 30
             grid_options:
               columns: full
-          - type: statistics-graph
-            title: COP TUV průměr
-            entities:
-              - entity: sensor.hp_cop_dhw_stats
-                name: COP TUV
-              - entity: sensor.hp_outside_temp
-                name: Venkovní teplota
-            stat_types:
-              - mean
-            period: day
-            days_to_show: 30
-            grid_options:
-              columns: full
-          - type: statistics-graph
-            title: COP topení průměr
-            entities:
-              - entity: sensor.hp_cop_heating_stats
-                name: COP topení
-              - entity: sensor.hp_outside_temp
-                name: Venkovní teplota
-            stat_types:
-              - mean
-            period: day
-            days_to_show: 30
-            grid_options:
-              columns: full
+            hide_legend: false
+            expand_legend: false
+            logarithmic_scale: false
       - column_span: 4
         cards:
           - type: heading
@@ -766,14 +771,15 @@ views:
               - entity: sensor.hp_compressor_starts_year
                 name: Tento rok
                 icon: mdi:calendar
-          - type: statistics-graph
+          - chart_type: bar
+            period: day
+            type: statistics-graph
             title: Starty kompresoru – historie
             entities:
               - entity: sensor.hp_compressor_starts_total
                 name: Starty
             stat_types:
               - change
-            period: day
             days_to_show: 30
             grid_options:
               columns: full

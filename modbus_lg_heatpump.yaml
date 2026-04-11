@@ -696,7 +696,7 @@ template:
         state: >
           {% set compressor_on = is_state('binary_sensor.hp_compressor_status', 'on')
                               and (states('sensor.shellypro3em_a4f00fcfb120_phase_a_vykon') | float(0)
-                                 + states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0)) > 100 %}
+                                 + states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0)) > 200 %}
           {% set flow = states('sensor.hp_flow_rate') | float(0) %}
           {% set dt = states('sensor.hp_delta_temp') | float(0) %}
           {% if compressor_on and flow > 0 and dt > 0 %}
@@ -712,12 +712,29 @@ template:
         icon: mdi:counter
         state: "{{ states('counter.hp_compressor_starts_total') | int(0) }}"
 
+      - name: "HP Outside Temp Filtered"
+        unique_id: "hp_outside_temp_filtered"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% set raw = states('sensor.hp_outside_temp') %}
+          {% set new = raw | float(0) %}
+          {% set prev = states('sensor.hp_outside_temp_filtered') | float(new) %}
+          {% if raw in ['unknown', 'unavailable'] %}
+            {{ prev }}
+          {% elif (new - prev) | abs <= 5 %}
+            {{ new }}
+          {% else %}
+            {{ prev }}
+          {% endif %}
+
       - name: "HP COP Carnot"
         unique_id: "hp_cop_carnot"
         state_class: measurement
         state: >
           {% set t_hot = states('sensor.hp_outlet_temp') | float(0) + 273.15 %}
-          {% set t_cold = states('sensor.hp_outside_temp') | float(0) + 273.15 %}
+          {% set t_cold = states('sensor.hp_outside_temp_filtered') | float(0) + 273.15 %}
           {{ (t_hot / (t_hot - t_cold)) | round(2) if (t_hot - t_cold) > 0 else 999 }}
 
       - name: "HP COP"
@@ -728,7 +745,7 @@ template:
           {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
           {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_phase_a_vykon') | float(0)
                         + states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0) %}
-          {% if compressor_on and p_thermal > 0 and p_elec > 100 %}
+          {% if compressor_on and p_thermal > 0 and p_elec > 200 %}
             {{ [p_thermal / p_elec, states('sensor.hp_cop_carnot') | float(999)] | min | round(2) }}
           {% else %}
             0
@@ -742,7 +759,7 @@ template:
           {% set dhw_on = is_state('binary_sensor.hp_dhw_heating_status', 'on') %}
           {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
           {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0) %}
-          {% if compressor_on and dhw_on and p_thermal > 0 and p_elec > 100 %}
+          {% if compressor_on and dhw_on and p_thermal > 0 and p_elec > 200 %}
             {{ [p_thermal / p_elec, states('sensor.hp_cop_carnot') | float(999)] | min | round(2) }}
           {% else %}
             0
@@ -756,7 +773,7 @@ template:
           {% set dhw_off = is_state('binary_sensor.hp_dhw_heating_status', 'off') %}
           {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
           {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0) %}
-          {% if compressor_on and dhw_off and p_thermal > 0 and p_elec > 100 %}
+          {% if compressor_on and dhw_off and p_thermal > 0 and p_elec > 200 %}
             {{ [p_thermal / p_elec, states('sensor.hp_cop_carnot') | float(999)] | min | round(2) }}
           {% else %}
             0
@@ -799,6 +816,15 @@ template:
           {{ states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0)
              if is_state('binary_sensor.hp_dhw_heating_status', 'off')
              and is_state('binary_sensor.hp_compressor_status', 'on') else 0 }}
+
+      - name: "HP Electrical Power Other"
+        unique_id: "hp_electrical_power_other"
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        state: >
+          {{ states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0)
+             if is_state('binary_sensor.hp_compressor_status', 'off') else 0 }}
 
       - name: "HP SCOP DHW"
         unique_id: "hp_scop_dhw"
@@ -853,7 +879,7 @@ template:
         device_class: temperature
         state_class: measurement
         state: >
-          {% set current = states('sensor.hp_outside_temp') | float(99) %}
+          {% set current = states('sensor.hp_outside_temp_filtered') | float(99) %}
           {% set forecast = states('input_number.hp_forecast_min_temp') | float(99) %}
           {{ [current, forecast] | min | round(1) }}
 
@@ -1172,7 +1198,7 @@ automation:
             {% set hours = states('input_number.hp_forecast_hours') | int(6) %}
             {% set fc = forecast_data['weather.forecast_home']['forecast'][:hours] %}
             {% set temps = fc | map(attribute='temperature') | list %}
-            {{ temps | min if temps | length > 0 else states('sensor.hp_outside_temp') | float(0) }}
+            {{ temps | min if temps | length > 0 else states('sensor.hp_outside_temp_filtered') | float(0) }}
     mode: single
 
   ### Topná křivka – přepnutí režimu ###
@@ -1317,7 +1343,7 @@ automation:
         id: "timer"
       - platform: state
         entity_id:
-          - sensor.hp_outside_temp
+          - sensor.hp_outside_temp_filtered
           - sensor.hp_solar_correction
           - sensor.hp_room_correction
         id: "outdoor_temp"
@@ -1459,6 +1485,14 @@ sensor:
     method: left
     round: 2
 
+  - platform: integration
+    source: sensor.hp_electrical_power_other
+    name: "HP Electrical Energy Other"
+    unique_id: hp_electrical_energy_other
+    unit_prefix: k
+    method: left
+    round: 2
+
 
 ##############################################################
 # UTILITY METERS — periodická spotřeba energie
@@ -1505,3 +1539,24 @@ utility_meter:
     source: sensor.hp_electrical_energy_heating
     cycle: yearly
     name: "HP Spotřeba topení – rok"
+
+  # --- Ostatní (bez kompresoru) ---
+  hp_electricity_ostatni_daily:
+    source: sensor.hp_electrical_energy_other
+    cycle: daily
+    name: "HP Spotřeba ostatní – dnes"
+
+  hp_electricity_ostatni_weekly:
+    source: sensor.hp_electrical_energy_other
+    cycle: weekly
+    name: "HP Spotřeba ostatní – týden"
+
+  hp_electricity_ostatni_monthly:
+    source: sensor.hp_electrical_energy_other
+    cycle: monthly
+    name: "HP Spotřeba ostatní – měsíc"
+
+  hp_electricity_ostatni_yearly:
+    source: sensor.hp_electrical_energy_other
+    cycle: yearly
+    name: "HP Spotřeba ostatní – rok"
