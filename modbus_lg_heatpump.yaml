@@ -723,7 +723,24 @@ template:
           {% set prev = states('sensor.hp_outside_temp_filtered') | float(new) %}
           {% if raw in ['unknown', 'unavailable'] %}
             {{ prev }}
-          {% elif (new - prev) | abs <= 5 %}
+          {% elif (new - prev) | abs <= 0.5 %}
+            {{ new }}
+          {% else %}
+            {{ prev }}
+          {% endif %}
+
+      - name: "HP Room Temp Filtered"
+        unique_id: "hp_room_temp_filtered"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% set raw = states('sensor.hp_room_temp') %}
+          {% set new = raw | float(0) %}
+          {% set prev = states('sensor.hp_room_temp_filtered') | float(new) %}
+          {% if raw in ['unknown', 'unavailable'] %}
+            {{ prev }}
+          {% elif (new - prev) | abs <= 0.5 %}
             {{ new }}
           {% else %}
             {{ prev }}
@@ -906,7 +923,7 @@ template:
         unit_of_measurement: "°C"
         state_class: measurement
         state: >
-          {% set room = states('sensor.hp_room_temp') | float(0) %}
+          {% set room = states('sensor.hp_room_temp_filtered') | float(0) %}
           {% set target = states('input_number.hp_room_target_temp') | float(21) %}
           {{ [[(target - room) * 3, -10] | max, 10] | min | round(1) }}
 
@@ -1301,14 +1318,14 @@ automation:
     description: "Jakmile teplota místnosti klesne na cílovou, obnoví topení a vypne krb mód."
     trigger:
       - platform: state
-        entity_id: sensor.hp_room_temp
+        entity_id: sensor.hp_room_temp_filtered
     condition:
       - condition: state
         entity_id: input_boolean.hp_fireplace_mode
         state: "on"
       - condition: template
         value_template: >
-          {{ states('sensor.hp_room_temp') | float(99) <=
+          {{ states('sensor.hp_room_temp_filtered') | float(99) <=
              states('input_number.hp_room_target_temp') | float(21) }}
     action:
       - service: switch.turn_on

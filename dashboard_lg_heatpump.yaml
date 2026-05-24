@@ -289,7 +289,7 @@ views:
             name: Venkovní teplota
             icon: mdi:thermometer
           - type: custom:mushroom-entity-card
-            entity: sensor.hp_room_temp
+            entity: sensor.hp_room_temp_filtered
             name: Teplota v místnosti
             icon: mdi:home-thermometer
           - type: custom:mushroom-entity-card
@@ -425,7 +425,7 @@ views:
           - type: entities
             title: Korekce
             entities:
-              - entity: sensor.hp_outside_temp
+              - entity: sensor.hp_outside_temp_filtered
                 name: ① Venkovní teplota
                 icon: mdi:thermometer
               - entity: sensor.hp_forecast_min_temp
@@ -545,9 +545,9 @@ views:
             entities:
               - entity: sensor.shellypro3em_a4f00fcfb120_phase_a_vykon
               - entity: sensor.shellypro3em_a4f00fcfb120_phase_c_vykon
-              - entity: sensor.hp_outside_temp
+              - entity: sensor.hp_outside_temp_filtered
                 name: Venkovní
-              - entity: sensor.hp_room_temp
+              - entity: sensor.hp_room_temp_filtered
                 name: Místnost
               - entity: sensor.hp_dhw_water_temp
                 name: TUV
@@ -578,7 +578,7 @@ views:
                 name: Výstup
               - entity: sensor.hp_inlet_temp
                 name: Přívod
-              - entity: sensor.hp_outside_temp
+              - entity: sensor.hp_outside_temp_filtered
                 name: Venkovní
             grid_options:
               columns: full
