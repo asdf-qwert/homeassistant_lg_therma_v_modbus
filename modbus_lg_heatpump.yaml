@@ -656,6 +656,49 @@ input_select:
 template:
   # Template sensors for better readability
   #-----------------------------------------
+
+  - trigger:
+      - trigger: state
+        entity_id: sensor.hp_outside_temp
+    sensor:
+      - name: "HP Outside Temp Filtered"
+        unique_id: "hp_outside_temp_filtered"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% set raw = trigger.to_state.state %}
+          {% set new = raw | float(0) %}
+          {% set prev = this.state | float(new) %}
+          {% if raw in ['unknown', 'unavailable'] %}
+            {{ this.state }}
+          {% elif (new - prev) | abs <= 0.5 %}
+            {{ new }}
+          {% else %}
+            {{ this.state }}
+          {% endif %}
+
+  - trigger:
+      - trigger: state
+        entity_id: sensor.hp_room_temp
+    sensor:
+      - name: "HP Room Temp Filtered"
+        unique_id: "hp_room_temp_filtered"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% set raw = trigger.to_state.state %}
+          {% set new = raw | float(0) %}
+          {% set prev = this.state | float(new) %}
+          {% if raw in ['unknown', 'unavailable'] %}
+            {{ this.state }}
+          {% elif (new - prev) | abs <= 0.5 %}
+            {{ new }}
+          {% else %}
+            {{ this.state }}
+          {% endif %}
+
   - binary_sensor:
       - name: "HP Backup Heater Active"
         unique_id: "hp_backup_heater_active"
@@ -711,40 +754,6 @@ template:
         state_class: total_increasing
         icon: mdi:counter
         state: "{{ states('counter.hp_compressor_starts_total') | int(0) }}"
-
-      - name: "HP Outside Temp Filtered"
-        unique_id: "hp_outside_temp_filtered"
-        unit_of_measurement: "°C"
-        device_class: temperature
-        state_class: measurement
-        state: >
-          {% set raw = states('sensor.hp_outside_temp') %}
-          {% set new = raw | float(0) %}
-          {% set prev = states('sensor.hp_outside_temp_filtered') | float(new) %}
-          {% if raw in ['unknown', 'unavailable'] %}
-            {{ prev }}
-          {% elif (new - prev) | abs <= 0.5 %}
-            {{ new }}
-          {% else %}
-            {{ prev }}
-          {% endif %}
-
-      - name: "HP Room Temp Filtered"
-        unique_id: "hp_room_temp_filtered"
-        unit_of_measurement: "°C"
-        device_class: temperature
-        state_class: measurement
-        state: >
-          {% set raw = states('sensor.hp_room_temp') %}
-          {% set new = raw | float(0) %}
-          {% set prev = states('sensor.hp_room_temp_filtered') | float(new) %}
-          {% if raw in ['unknown', 'unavailable'] %}
-            {{ prev }}
-          {% elif (new - prev) | abs <= 0.5 %}
-            {{ new }}
-          {% else %}
-            {{ prev }}
-          {% endif %}
 
       - name: "HP COP Carnot"
         unique_id: "hp_cop_carnot"
