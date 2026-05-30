@@ -636,6 +636,10 @@ input_boolean:
     name: "Krb – pauza podlahy"
     icon: mdi:fireplace
 
+  hp_auto_cutoff_enabled:
+    name: "Auto vypnutí topení (cutoff)"
+    icon: mdi:thermometer-off
+
 input_select:
   # Input Select
   # -----------------------------------------
@@ -1343,6 +1347,58 @@ automation:
       - service: input_boolean.turn_off
         target:
           entity_id: input_boolean.hp_fireplace_mode
+    mode: single
+
+  - alias: "hp_automation_cutoff_turn_off"
+    id: "hp_automation_cutoff_turn_off"
+    description: >
+      Vypne podlahovku když venkovní teplota překročí cutoff topné křivky
+      a zůstane nad ním alespoň 10 minut.
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.hp_outside_temp_filtered
+        above: input_number.hp_curve_heating_cutoff
+        for: "00:10:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.hp_auto_cutoff_enabled
+        state: "on"
+      - condition: state
+        entity_id: input_select.hp_set_operation_mode
+        state: "Topení"
+      - condition: state
+        entity_id: switch.hp_main_switch
+        state: "on"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.hp_main_switch
+    mode: single
+
+  - alias: "hp_automation_cutoff_turn_on"
+    id: "hp_automation_cutoff_turn_on"
+    description: "Zapne podlahovku zpět jakmile teplota klesne pod cutoff."
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.hp_outside_temp_filtered
+        below: input_number.hp_curve_heating_cutoff
+    condition:
+      - condition: state
+        entity_id: input_boolean.hp_auto_cutoff_enabled
+        state: "on"
+      - condition: state
+        entity_id: input_select.hp_set_operation_mode
+        state: "Topení"
+      - condition: state
+        entity_id: switch.hp_main_switch
+        state: "off"
+      - condition: state
+        entity_id: input_boolean.hp_fireplace_mode
+        state: "off"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.hp_main_switch
     mode: single
 
   - alias: "hp_automation_compressor_start_counter"
