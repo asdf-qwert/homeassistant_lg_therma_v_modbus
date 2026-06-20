@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.manualslib.com)",
+      "WebFetch(domain:www.yourwizblog.com)",
+      "WebFetch(domain:community.home-assistant.io)",
+      "WebFetch(domain:flows.nodered.org)",
+      "Bash(gh api:*)",
+      "Bash(python3 -c \"import json,sys; [print\\(x[''''name''''], x[''''type'''']\\) for x in json.load\\(sys.stdin\\)]\")",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:forum.domoticz.com)",
+      "WebFetch(domain:www.irishellas.com)",
+      "WebFetch(domain:www.wunderground.com)",
+      "WebFetch(domain:www.yr.no)",
+      "WebFetch(domain:www.accuweather.com)",
+      "WebFetch(domain:pocasi.seznam.cz)",
+      "WebFetch(domain:www.windy.com)",
+      "WebFetch(domain:www.meteoblue.com)",
+      "WebFetch(domain:www.in-pocasi.cz)",
+      "WebFetch(domain:www.chmi.cz)",
+      "WebFetch(domain:www.slunecno.cz)",
+      "WebFetch(domain:openweathermap.org)",
+      "WebFetch(domain:api.met.no)",
+      "WebFetch(domain:wttr.in)",
+      "WebFetch(domain:meteocentrum.cz)",
+      "WebFetch(domain:pocasi.idnes.cz)"
+    ]
+  }
+}

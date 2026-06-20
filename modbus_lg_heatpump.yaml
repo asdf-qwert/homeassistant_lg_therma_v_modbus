@@ -745,7 +745,7 @@ template:
                               and (states('sensor.shellypro3em_a4f00fcfb120_phase_a_vykon') | float(0)
                                  + states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0)) > 200 %}
           {% set flow = states('sensor.hp_flow_rate') | float(0) %}
-          {% set dt = states('sensor.hp_delta_temp') | float(0) %}
+          {% set dt = states('sensor.hp_delta_temp') | float(0) | abs %}
           {% if compressor_on and flow > 0 and dt > 0 %}
             {{ (flow * 69.77 * dt) | round(0) }}
           {% else %}
