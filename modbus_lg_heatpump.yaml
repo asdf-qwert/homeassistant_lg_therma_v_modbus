@@ -592,6 +592,79 @@ input_number:
     step: 1
     unit_of_measurement: "°C"
 
+  # --- Chladicí křivka ---
+  hp_cool_curve_point1_outdoor:
+    name: "Chladicí křivka – bod 1 venkovní teplota (mírný)"
+    min: 15
+    max: 30
+    step: 1
+    initial: 22
+    unit_of_measurement: "°C"
+
+  hp_cool_curve_point1_water:
+    name: "Chladicí křivka – bod 1 teplota vody (mírný)"
+    min: 15
+    max: 30
+    step: 1
+    initial: 22
+    unit_of_measurement: "°C"
+
+  hp_cool_curve_point2_outdoor:
+    name: "Chladicí křivka – bod 2 venkovní teplota (horký)"
+    min: 20
+    max: 40
+    step: 1
+    initial: 30
+    unit_of_measurement: "°C"
+
+  hp_cool_curve_point2_water:
+    name: "Chladicí křivka – bod 2 teplota vody (horký)"
+    min: 10
+    max: 25
+    step: 1
+    initial: 18
+    unit_of_measurement: "°C"
+
+  hp_cool_curve_min_temp:
+    name: "Chladicí křivka – min. teplota vody"
+    min: 10
+    max: 25
+    step: 1
+    initial: 18
+    unit_of_measurement: "°C"
+
+  hp_cool_curve_max_temp:
+    name: "Chladicí křivka – max. teplota vody"
+    min: 15
+    max: 35
+    step: 1
+    initial: 25
+    unit_of_measurement: "°C"
+
+  hp_cool_curve_shift:
+    name: "Chladicí křivka – posun setpointu"
+    min: -5
+    max: 5
+    step: 0.5
+    initial: 0
+    unit_of_measurement: "°C"
+
+  hp_cooling_cutoff:
+    name: "Chladicí křivka – start chlazení nad"
+    min: 15
+    max: 35
+    step: 1
+    initial: 25
+    unit_of_measurement: "°C"
+
+  hp_water_hysteresis:
+    name: "Hystereze vody"
+    min: 0.5
+    max: 5
+    step: 0.5
+    initial: 1
+    unit_of_measurement: "°C"
+
   hp_forecast_hours:
     name: "Předpověď – počet hodin dopředu"
     min: 1
@@ -621,8 +694,8 @@ input_number:
 
 input_boolean:
   hp_heating_curve_enabled:
-    name: "Topná křivka – aktivní"
-    icon: mdi:chart-bell-curve
+    name: "Auto klima (topení + chlazení)"
+    icon: mdi:sun-snowflake
 
   hp_dashboard_locked:
     name: "Zámek ovládání"
@@ -709,6 +782,28 @@ template:
         device_class: heat
         state: >
           {{ states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0) > 50 }}
+
+      - name: "HP Heating Active by Delta"
+        unique_id: "hp_heating_active_by_delta"
+        icon: mdi:fire
+        delay_on: "00:01:00"
+        delay_off: "00:01:00"
+        state: >
+          {{ is_state('binary_sensor.hp_compressor_status', 'on')
+             and is_state('binary_sensor.hp_dhw_heating_status', 'off')
+             and states('sensor.hp_flow_rate') | float(0) > 0
+             and states('sensor.hp_delta_temp') | float(0) >= 0.3 }}
+
+      - name: "HP Cooling Active by Delta"
+        unique_id: "hp_cooling_active_by_delta"
+        icon: mdi:snowflake
+        delay_on: "00:01:00"
+        delay_off: "00:01:00"
+        state: >
+          {{ is_state('binary_sensor.hp_compressor_status', 'on')
+             and is_state('binary_sensor.hp_dhw_heating_status', 'off')
+             and states('sensor.hp_flow_rate') | float(0) > 0
+             and states('sensor.hp_delta_temp') | float(0) <= -0.3 }}
 
   - sensor:
       - name: "HP Energy State"
@@ -800,11 +895,24 @@ template:
         state_class: measurement
         state: >
           {% set compressor_on = is_state('binary_sensor.hp_compressor_status', 'on') %}
-          {% set dhw_off = is_state('binary_sensor.hp_dhw_heating_status', 'off') %}
+          {% set heating_on = is_state('binary_sensor.hp_heating_active_by_delta', 'on') %}
           {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
           {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0) %}
-          {% if compressor_on and dhw_off and p_thermal > 0 and p_elec > 200 %}
+          {% if compressor_on and heating_on and p_thermal > 0 and p_elec > 200 %}
             {{ [p_thermal / p_elec, states('sensor.hp_cop_carnot') | float(999)] | min | round(2) }}
+          {% else %}
+            0
+          {% endif %}
+
+      - name: "HP COP Cooling"
+        unique_id: "hp_cop_cooling"
+        state_class: measurement
+        state: >
+          {% set cooling_on = is_state('binary_sensor.hp_cooling_active_by_delta', 'on') %}
+          {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
+          {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0) %}
+          {% if cooling_on and p_thermal > 0 and p_elec > 200 %}
+            {{ (p_thermal / p_elec) | round(2) }}
           {% else %}
             0
           {% endif %}
@@ -825,8 +933,16 @@ template:
         state_class: measurement
         state: >
           {{ states('sensor.hp_thermal_power') | float(0)
-             if is_state('binary_sensor.hp_dhw_heating_status', 'off')
-             and is_state('binary_sensor.hp_compressor_status', 'on') else 0 }}
+             if is_state('binary_sensor.hp_heating_active_by_delta', 'on') else 0 }}
+
+      - name: "HP Thermal Power Cooling"
+        unique_id: "hp_thermal_power_cooling"
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        state: >
+          {{ states('sensor.hp_thermal_power') | float(0)
+             if is_state('binary_sensor.hp_cooling_active_by_delta', 'on') else 0 }}
 
       - name: "HP Electrical Power DHW"
         unique_id: "hp_electrical_power_dhw"
@@ -844,8 +960,16 @@ template:
         state_class: measurement
         state: >
           {{ states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0)
-             if is_state('binary_sensor.hp_dhw_heating_status', 'off')
-             and is_state('binary_sensor.hp_compressor_status', 'on') else 0 }}
+             if is_state('binary_sensor.hp_heating_active_by_delta', 'on') else 0 }}
+
+      - name: "HP Electrical Power Cooling"
+        unique_id: "hp_electrical_power_cooling"
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        state: >
+          {{ states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0)
+             if is_state('binary_sensor.hp_cooling_active_by_delta', 'on') else 0 }}
 
       - name: "HP Electrical Power Other"
         unique_id: "hp_electrical_power_other"
@@ -854,7 +978,9 @@ template:
         state_class: measurement
         state: >
           {{ states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0)
-             if is_state('binary_sensor.hp_compressor_status', 'off') else 0 }}
+             if is_state('binary_sensor.hp_dhw_heating_status', 'off')
+             and is_state('binary_sensor.hp_heating_active_by_delta', 'off')
+             and is_state('binary_sensor.hp_cooling_active_by_delta', 'off') else 0 }}
 
       - name: "HP SCOP DHW"
         unique_id: "hp_scop_dhw"
@@ -870,6 +996,14 @@ template:
         state: >
           {% set thermal = states('sensor.hp_thermal_energy_heating') | float(0) %}
           {% set elec = states('sensor.hp_electrical_energy_heating') | float(0) %}
+          {{ (thermal / elec) | round(2) if elec > 0 else 0 }}
+
+      - name: "HP SCOP Cooling"
+        unique_id: "hp_scop_cooling"
+        state_class: measurement
+        state: >
+          {% set thermal = states('sensor.hp_thermal_energy_cooling') | float(0) %}
+          {% set elec = states('sensor.hp_electrical_energy_cooling') | float(0) %}
           {{ (thermal / elec) | round(2) if elec > 0 else 0 }}
 
       - name: "HP COP stats"
@@ -891,6 +1025,13 @@ template:
         state_class: measurement
         state: >
           {% set cop = states('sensor.hp_cop_heating') | float(0) %}
+          {{ cop if cop > 0 else none }}
+
+      - name: "HP COP Cooling stats"
+        unique_id: "hp_cop_cooling_stats"
+        state_class: measurement
+        state: >
+          {% set cop = states('sensor.hp_cop_cooling') | float(0) %}
           {{ cop if cop > 0 else none }}
 
       - name: "HP SCOP"
@@ -978,6 +1119,209 @@ template:
           {% set room = states('sensor.hp_room_correction') | float(0) %}
           {% set shift = states('input_number.hp_curve_shift') | float(0) %}
           {{ [min_t, raw + solar + room + shift] | max | round(0) | int }}
+
+      - name: "HP Auto Climate Mode"
+        unique_id: "hp_auto_climate_mode"
+        icon: mdi:sun-snowflake
+        state: >
+          {% set temp_state = states('sensor.hp_outside_temp_filtered') %}
+          {% set temp = temp_state | float(0) %}
+          {% set heating_cutoff = states('input_number.hp_curve_heating_cutoff') | float(18) %}
+          {% set cooling_cutoff = states('input_number.hp_cooling_cutoff') | float(24) %}
+          {% if not is_state('input_boolean.hp_heating_curve_enabled', 'on') %}
+            Vypnuto
+          {% elif temp_state in ['unknown', 'unavailable', 'none'] %}
+            Chyba teploty
+          {% elif cooling_cutoff <= heating_cutoff %}
+            Chyba cutoff
+          {% elif temp <= heating_cutoff %}
+            Topení
+          {% elif temp >= cooling_cutoff %}
+            Chlazení
+          {% else %}
+            Pauza
+          {% endif %}
+
+      - name: "HP Cool Curve Raw"
+        unique_id: "hp_cool_curve_raw"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% set temp = states('sensor.hp_outside_temp_filtered') | float(0) %}
+          {% set t1 = states('input_number.hp_cool_curve_point1_outdoor') | float(20) %}
+          {% set w1 = states('input_number.hp_cool_curve_point1_water') | float(22) %}
+          {% set t2 = states('input_number.hp_cool_curve_point2_outdoor') | float(30) %}
+          {% set w2 = states('input_number.hp_cool_curve_point2_water') | float(18) %}
+          {% set min_t = states('input_number.hp_cool_curve_min_temp') | float(16) %}
+          {% set max_t = states('input_number.hp_cool_curve_max_temp') | float(25) %}
+          {% if t2 <= t1 or min_t > max_t %}
+            {{ none }}
+          {% else %}
+            {% set raw = w1 + (w2 - w1) / (t2 - t1) * (temp - t1) %}
+            {{ [[raw, min_t] | max, max_t] | min | round(1) }}
+          {% endif %}
+
+      - name: "HP Cooling Curve Setpoint"
+        unique_id: "hp_cooling_curve_setpoint"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% set raw = states('sensor.hp_cool_curve_raw') | float(none) %}
+          {% set min_t = states('input_number.hp_cool_curve_min_temp') | float(16) %}
+          {% set max_t = states('input_number.hp_cool_curve_max_temp') | float(25) %}
+          {% set solar = states('sensor.hp_solar_correction') | float(0) %}
+          {% set room = states('sensor.hp_room_correction') | float(0) %}
+          {% set shift = states('input_number.hp_cool_curve_shift') | float(0) %}
+          {% if raw is none or min_t > max_t %}
+            {{ none }}
+          {% else %}
+            {{ [[raw + solar + room + shift, min_t] | max, max_t] | min | round(0) | int }}
+          {% endif %}
+
+      - name: "HP Climate Setpoint"
+        unique_id: "hp_climate_setpoint"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% set mode = states('sensor.hp_auto_climate_mode') %}
+          {% if mode == 'Topení' %}
+            {{ states('sensor.hp_heating_curve_setpoint') }}
+          {% elif mode == 'Chlazení' %}
+            {{ states('sensor.hp_cooling_curve_setpoint') }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+      - name: "HP Hysteresis Water Temp"
+        unique_id: "hp_hysteresis_water_temp"
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: >
+          {% if is_state('input_select.hp_set_control_method', 'Water Outlet Temp. Control') %}
+            {{ states('sensor.hp_outlet_temp') }}
+          {% elif is_state('input_select.hp_set_control_method', 'Water Inlet Temp. Control') %}
+            {{ states('sensor.hp_inlet_temp') }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+      # Compatibility aliases for utility meters. The meters keep their existing
+      # Czech entity IDs so historical data and the original dashboard survive.
+      - name: "HP Electricity DHW Daily"
+        unique_id: "hp_electricity_dhw_daily_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_tuv_dnes') }}"
+
+      - name: "HP Electricity DHW Weekly"
+        unique_id: "hp_electricity_dhw_weekly_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_tuv_tyden') }}"
+
+      - name: "HP Electricity DHW Monthly"
+        unique_id: "hp_electricity_dhw_monthly_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_tuv_mesic') }}"
+
+      - name: "HP Electricity DHW Yearly"
+        unique_id: "hp_electricity_dhw_yearly_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_tuv_rok') }}"
+
+      - name: "HP Electricity Heating Daily"
+        unique_id: "hp_electricity_heating_daily_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_topeni_dnes') }}"
+
+      - name: "HP Electricity Heating Weekly"
+        unique_id: "hp_electricity_heating_weekly_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_topeni_tyden') }}"
+
+      - name: "HP Electricity Heating Monthly"
+        unique_id: "hp_electricity_heating_monthly_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_topeni_mesic') }}"
+
+      - name: "HP Electricity Heating Yearly"
+        unique_id: "hp_electricity_heating_yearly_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_topeni_rok') }}"
+
+      - name: "HP Electricity Cooling Daily"
+        unique_id: "hp_electricity_cooling_daily_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_chlazeni_dnes') }}"
+
+      - name: "HP Electricity Cooling Weekly"
+        unique_id: "hp_electricity_cooling_weekly_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_chlazeni_tyden') }}"
+
+      - name: "HP Electricity Cooling Monthly"
+        unique_id: "hp_electricity_cooling_monthly_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_chlazeni_mesic') }}"
+
+      - name: "HP Electricity Cooling Yearly"
+        unique_id: "hp_electricity_cooling_yearly_alias"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_chlazeni_rok') }}"
+
+      - name: "HP Electricity Ostatni Daily"
+        unique_id: "hp_electricity_ostatni_daily_dashboard"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_ostatni_dnes') }}"
+
+      - name: "HP Electricity Ostatni Weekly"
+        unique_id: "hp_electricity_ostatni_weekly_dashboard"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_ostatni_tyden') }}"
+
+      - name: "HP Electricity Ostatni Monthly"
+        unique_id: "hp_electricity_ostatni_monthly_dashboard"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_ostatni_mesic') }}"
+
+      - name: "HP Electricity Ostatni Yearly"
+        unique_id: "hp_electricity_ostatni_yearly_dashboard"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: "{{ states('sensor.hp_spotreba_ostatni_rok') }}"
 
 # ---------------------------------------------------------------------------------------------------------------
 # Automations: Write modbus registers on input changes via GUI
@@ -1231,27 +1575,192 @@ automation:
             {{ temps | min if temps | length > 0 else states('sensor.hp_outside_temp_filtered') | float(0) }}
     mode: single
 
-  ### Topná křivka – přepnutí režimu ###
+  ### Auto klima – volba režimu a podlahovky ###
   #-------------------------------------------------------------------------------
-  - alias: "hp_automation_heating_curve_mode_switch"
-    id: "hp_automation_heating_curve_mode_switch"
-    description: "Při zapnutí křivky přepne do Heating; při vypnutí ponechá aktuální režim TČ"
+  - alias: "hp_automation_auto_climate_control"
+    id: "hp_automation_auto_climate_control"
+    description: "Při aktivním Auto klima řídí topení, chlazení nebo pauzu dle venkovní teploty."
     trigger:
       - platform: state
+        entity_id:
+          - input_boolean.hp_heating_curve_enabled
+          - sensor.hp_auto_climate_mode
+          - input_select.hp_set_operation_mode
+          - switch.hp_main_switch
+          - input_boolean.hp_fireplace_mode
+      - platform: homeassistant
+        event: start
+    condition:
+      - condition: state
         entity_id: input_boolean.hp_heating_curve_enabled
+        state: "on"
     action:
       - choose:
           - conditions:
               - condition: state
-                entity_id: input_boolean.hp_heating_curve_enabled
+                entity_id: switch.hp_main_switch
+                state: "on"
+              - condition: template
+                value_template: >
+                  {{ states('sensor.hp_climate_setpoint') | float(none) is none }}
+            sequence:
+              - service: switch.turn_off
+                target:
+                  entity_id: switch.hp_main_switch
+          - conditions:
+              - condition: state
+                entity_id: sensor.hp_auto_climate_mode
+                state: "Topení"
+              - condition: state
+                entity_id: input_boolean.hp_fireplace_mode
+                state: "off"
+            sequence:
+              - if:
+                  - condition: not
+                    conditions:
+                      - condition: state
+                        entity_id: input_select.hp_set_operation_mode
+                        state: "Topení"
+                then:
+                  - service: input_select.select_option
+                    target:
+                      entity_id: input_select.hp_set_operation_mode
+                    data:
+                      option: "Topení"
+          - conditions:
+              - condition: state
+                entity_id: sensor.hp_auto_climate_mode
+                state: "Chlazení"
+              - condition: state
+                entity_id: input_boolean.hp_fireplace_mode
+                state: "off"
+            sequence:
+              - if:
+                  - condition: not
+                    conditions:
+                      - condition: state
+                        entity_id: input_select.hp_set_operation_mode
+                        state: "Chlazení"
+                then:
+                  - service: input_select.select_option
+                    target:
+                      entity_id: input_select.hp_set_operation_mode
+                    data:
+                      option: "Chlazení"
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ states('sensor.hp_auto_climate_mode') in ['Pauza', 'Chyba cutoff', 'Chyba teploty'] }}
+              - condition: state
+                entity_id: switch.hp_main_switch
                 state: "on"
             sequence:
-              - service: input_select.select_option
+              - service: switch.turn_off
                 target:
-                  entity_id: input_select.hp_set_operation_mode
-                data:
-                  option: "Topení"
-    mode: single
+                  entity_id: switch.hp_main_switch
+    mode: restart
+
+  ### Auto klima – hystereze vody ###
+  #-------------------------------------------------------------------------------
+  - alias: "hp_automation_auto_climate_water_hysteresis"
+    id: "hp_automation_auto_climate_water_hysteresis"
+    description: "Spíná podlahovku v pásmu hystereze kolem cílové teploty vody."
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.hp_auto_climate_mode
+          - sensor.hp_climate_setpoint
+          - sensor.hp_hysteresis_water_temp
+          - input_number.hp_water_hysteresis
+          - input_select.hp_set_control_method
+          - input_boolean.hp_heating_curve_enabled
+      - platform: homeassistant
+        event: start
+    condition:
+      - condition: state
+        entity_id: input_boolean.hp_heating_curve_enabled
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.hp_fireplace_mode
+        state: "off"
+      - condition: template
+        value_template: >
+          {{ states('input_select.hp_set_control_method') in
+             ['Water Outlet Temp. Control', 'Water Inlet Temp. Control'] }}
+      - condition: template
+        value_template: >
+          {{ states('sensor.hp_auto_climate_mode') in ['Topení', 'Chlazení'] }}
+    action:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: sensor.hp_auto_climate_mode
+                state: "Topení"
+              - condition: state
+                entity_id: switch.hp_main_switch
+                state: "off"
+              - condition: template
+                value_template: >
+                  {% set water = states('sensor.hp_hysteresis_water_temp') | float(99) %}
+                  {% set setpoint = states('sensor.hp_climate_setpoint') | float(0) %}
+                  {% set hysteresis = states('input_number.hp_water_hysteresis') | float(1) %}
+                  {{ water <= setpoint - hysteresis }}
+            sequence:
+              - service: switch.turn_on
+                target:
+                  entity_id: switch.hp_main_switch
+          - conditions:
+              - condition: state
+                entity_id: sensor.hp_auto_climate_mode
+                state: "Topení"
+              - condition: state
+                entity_id: switch.hp_main_switch
+                state: "on"
+              - condition: template
+                value_template: >
+                  {% set water = states('sensor.hp_hysteresis_water_temp') | float(0) %}
+                  {% set setpoint = states('sensor.hp_climate_setpoint') | float(99) %}
+                  {% set hysteresis = states('input_number.hp_water_hysteresis') | float(1) %}
+                  {{ water >= setpoint + hysteresis }}
+            sequence:
+              - service: switch.turn_off
+                target:
+                  entity_id: switch.hp_main_switch
+          - conditions:
+              - condition: state
+                entity_id: sensor.hp_auto_climate_mode
+                state: "Chlazení"
+              - condition: state
+                entity_id: switch.hp_main_switch
+                state: "off"
+              - condition: template
+                value_template: >
+                  {% set water = states('sensor.hp_hysteresis_water_temp') | float(0) %}
+                  {% set setpoint = states('sensor.hp_climate_setpoint') | float(99) %}
+                  {% set hysteresis = states('input_number.hp_water_hysteresis') | float(1) %}
+                  {{ water >= setpoint + hysteresis }}
+            sequence:
+              - service: switch.turn_on
+                target:
+                  entity_id: switch.hp_main_switch
+          - conditions:
+              - condition: state
+                entity_id: sensor.hp_auto_climate_mode
+                state: "Chlazení"
+              - condition: state
+                entity_id: switch.hp_main_switch
+                state: "on"
+              - condition: template
+                value_template: >
+                  {% set water = states('sensor.hp_hysteresis_water_temp') | float(99) %}
+                  {% set setpoint = states('sensor.hp_climate_setpoint') | float(0) %}
+                  {% set hysteresis = states('input_number.hp_water_hysteresis') | float(1) %}
+                  {{ water <= setpoint - hysteresis }}
+            sequence:
+              - service: switch.turn_off
+                target:
+                  entity_id: switch.hp_main_switch
+    mode: restart
 
   ### Topná křivka – aplikace setpointu ###
   #-------------------------------------------------------------------------------
@@ -1351,6 +1860,9 @@ automation:
         for: "00:10:00"
     condition:
       - condition: state
+        entity_id: input_boolean.hp_heating_curve_enabled
+        state: "off"
+      - condition: state
         entity_id: input_boolean.hp_auto_cutoff_enabled
         state: "on"
       - condition: state
@@ -1373,6 +1885,9 @@ automation:
         entity_id: sensor.hp_outside_temp_filtered
         below: input_number.hp_curve_heating_cutoff
     condition:
+      - condition: state
+        entity_id: input_boolean.hp_heating_curve_enabled
+        state: "off"
       - condition: state
         entity_id: input_boolean.hp_auto_cutoff_enabled
         state: "on"
@@ -1404,48 +1919,50 @@ automation:
           entity_id: counter.hp_compressor_starts_total
     mode: single
 
-  - alias: "hp_automation_apply_heating_curve"
-    id: "hp_automation_apply_heating_curve"
+  - alias: "hp_automation_apply_auto_climate_curve"
+    id: "hp_automation_apply_auto_climate_curve"
     description: >
-      Zvýšení setpointu: okamžitě při změně venkovní teploty, korekcí nebo zapnutí křivky.
-      Snížení setpointu: každou hodinu (timer).
+      Při růstu požadavku upraví vodu ihned; při jeho snížení jednou za hodinu.
     trigger:
       - platform: time_pattern
         hours: /1
         id: "timer"
       - platform: state
         entity_id:
-          - sensor.hp_outside_temp_filtered
-          - sensor.hp_solar_correction
-          - sensor.hp_room_correction
-        id: "outdoor_temp"
-      - platform: state
-        entity_id: input_boolean.hp_heating_curve_enabled
-        to: "on"
-        id: "curve_enabled"
+          - sensor.hp_climate_setpoint
+          - sensor.hp_auto_climate_mode
+          - input_select.hp_set_operation_mode
+          - switch.hp_main_switch
+        id: "setpoint"
     condition:
       - condition: state
         entity_id: input_boolean.hp_heating_curve_enabled
         state: "on"
-      - condition: state
-        entity_id: input_select.hp_set_operation_mode
-        state: "Topení"
       - condition: template
         value_template: >
-          {% set new = states('sensor.hp_heating_curve_setpoint') | int %}
+          {{ states('sensor.hp_auto_climate_mode') in ['Topení', 'Chlazení'] }}
+      - condition: state
+        entity_id: switch.hp_main_switch
+        state: "on"
+      - condition: template
+        value_template: >
+          {% set climate_mode = states('sensor.hp_auto_climate_mode') %}
+          {% set new = states('sensor.hp_climate_setpoint') | int(-99) %}
           {% set cur = states('input_number.hp_circuit1_target_temp') | int %}
           {% set diff = new - cur %}
           {% if trigger.id == 'timer' %}
             {{ diff | abs >= 1 }}
-          {% else %}
+          {% elif climate_mode == 'Topení' %}
             {{ diff >= 1 }}
+          {% else %}
+            {{ diff <= -1 }}
           {% endif %}
     action:
       - service: input_number.set_value
         target:
           entity_id: input_number.hp_circuit1_target_temp
         data:
-          value: "{{ states('sensor.hp_heating_curve_setpoint') | int }}"
+          value: "{{ states('sensor.hp_climate_setpoint') | int }}"
     mode: single
 
 
@@ -1542,6 +2059,14 @@ sensor:
     round: 2
 
   - platform: integration
+    source: sensor.hp_thermal_power_cooling
+    name: "HP Thermal Energy Cooling"
+    unique_id: hp_thermal_energy_cooling
+    unit_prefix: k
+    method: left
+    round: 2
+
+  - platform: integration
     source: sensor.hp_electrical_power_dhw
     name: "HP Electrical Energy DHW"
     unique_id: hp_electrical_energy_dhw
@@ -1553,6 +2078,14 @@ sensor:
     source: sensor.hp_electrical_power_heating
     name: "HP Electrical Energy Heating"
     unique_id: hp_electrical_energy_heating
+    unit_prefix: k
+    method: left
+    round: 2
+
+  - platform: integration
+    source: sensor.hp_electrical_power_cooling
+    name: "HP Electrical Energy Cooling"
+    unique_id: hp_electrical_energy_cooling
     unit_prefix: k
     method: left
     round: 2
@@ -1611,6 +2144,27 @@ utility_meter:
     source: sensor.hp_electrical_energy_heating
     cycle: yearly
     name: "HP Spotřeba topení – rok"
+
+  # --- Chlazení ---
+  hp_electricity_cooling_daily:
+    source: sensor.hp_electrical_energy_cooling
+    cycle: daily
+    name: "HP Spotřeba chlazení – dnes"
+
+  hp_electricity_cooling_weekly:
+    source: sensor.hp_electrical_energy_cooling
+    cycle: weekly
+    name: "HP Spotřeba chlazení – týden"
+
+  hp_electricity_cooling_monthly:
+    source: sensor.hp_electrical_energy_cooling
+    cycle: monthly
+    name: "HP Spotřeba chlazení – měsíc"
+
+  hp_electricity_cooling_yearly:
+    source: sensor.hp_electrical_energy_cooling
+    cycle: yearly
+    name: "HP Spotřeba chlazení – rok"
 
   # --- Ostatní (bez kompresoru) ---
   hp_electricity_ostatni_daily:
