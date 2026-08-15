@@ -1235,7 +1235,7 @@ automation:
   #-------------------------------------------------------------------------------
   - alias: "hp_automation_heating_curve_mode_switch"
     id: "hp_automation_heating_curve_mode_switch"
-    description: "Při zapnutí křivky přepne do Heating, při vypnutí vrátí do Auto"
+    description: "Při zapnutí křivky přepne do Heating; při vypnutí ponechá aktuální režim TČ"
     trigger:
       - platform: state
         entity_id: input_boolean.hp_heating_curve_enabled
@@ -1251,16 +1251,6 @@ automation:
                   entity_id: input_select.hp_set_operation_mode
                 data:
                   option: "Topení"
-          - conditions:
-              - condition: state
-                entity_id: input_boolean.hp_heating_curve_enabled
-                state: "off"
-            sequence:
-              - service: input_select.select_option
-                target:
-                  entity_id: input_select.hp_set_operation_mode
-                data:
-                  option: "Auto"
     mode: single
 
   ### Topná křivka – aplikace setpointu ###
