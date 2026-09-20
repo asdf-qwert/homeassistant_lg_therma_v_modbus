@@ -593,12 +593,12 @@ input_number:
     unit_of_measurement: "°C"
 
   # --- Chladicí křivka ---
+  # Bez initial: po restartu obnovit poslední nastavené hodnoty.
   hp_cool_curve_point1_outdoor:
     name: "Chladicí křivka – bod 1 venkovní teplota (mírný)"
     min: 15
     max: 30
     step: 1
-    initial: 22
     unit_of_measurement: "°C"
 
   hp_cool_curve_point1_water:
@@ -606,7 +606,6 @@ input_number:
     min: 15
     max: 30
     step: 1
-    initial: 22
     unit_of_measurement: "°C"
 
   hp_cool_curve_point2_outdoor:
@@ -614,7 +613,6 @@ input_number:
     min: 20
     max: 40
     step: 1
-    initial: 30
     unit_of_measurement: "°C"
 
   hp_cool_curve_point2_water:
@@ -622,7 +620,6 @@ input_number:
     min: 10
     max: 25
     step: 1
-    initial: 18
     unit_of_measurement: "°C"
 
   hp_cool_curve_min_temp:
@@ -630,7 +627,6 @@ input_number:
     min: 10
     max: 25
     step: 1
-    initial: 18
     unit_of_measurement: "°C"
 
   hp_cool_curve_max_temp:
@@ -638,7 +634,6 @@ input_number:
     min: 15
     max: 35
     step: 1
-    initial: 25
     unit_of_measurement: "°C"
 
   hp_cool_curve_shift:
@@ -646,7 +641,6 @@ input_number:
     min: -5
     max: 5
     step: 0.5
-    initial: 0
     unit_of_measurement: "°C"
 
   hp_cooling_cutoff:
@@ -654,7 +648,6 @@ input_number:
     min: 15
     max: 35
     step: 1
-    initial: 25
     unit_of_measurement: "°C"
 
   hp_water_hysteresis:
@@ -662,7 +655,6 @@ input_number:
     min: 0.5
     max: 5
     step: 0.5
-    initial: 1
     unit_of_measurement: "°C"
 
   hp_forecast_hours:
