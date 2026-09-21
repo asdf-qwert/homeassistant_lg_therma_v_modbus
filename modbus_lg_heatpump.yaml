@@ -662,6 +662,9 @@ input_number:
     min: 1
     max: 12
     step: 1
+    mode: slider
+    unit_of_measurement: "h"
+    icon: mdi:clock-outline
 
   hp_forecast_min_temp:
     name: "Předpověď – min. teplota (auto)"
@@ -1541,10 +1544,12 @@ automation:
   #-------------------------------------------------------------------------------
   - alias: "hp_automation_fetch_forecast"
     id: "hp_automation_fetch_forecast"
-    description: "Každých 15 minut načte hodinovou předpověď a uloží minimální teplotu"
+    description: "Každých 15 minut a při změně počtu hodin načte hodinovou předpověď a uloží minimální teplotu"
     trigger:
       - platform: time_pattern
         minutes: /15
+      - platform: state
+        entity_id: input_number.hp_forecast_hours
       - platform: homeassistant
         event: start
     action:
