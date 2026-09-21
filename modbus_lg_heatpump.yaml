@@ -667,7 +667,8 @@ input_number:
     icon: mdi:clock-outline
 
   hp_forecast_min_temp:
-    name: "Předpověď – min. teplota (auto)"
+    # Původní ID zachováno kvůli existujícím entitám a automatizacím.
+    name: "Předpověď – průměrná teplota (auto)"
     min: -30
     max: 40
     step: 0.1
@@ -1076,6 +1077,7 @@ template:
           {% set target = states('input_number.hp_room_target_temp') | float(21) %}
           {{ [[(target - room) * 3, -10] | max, 10] | min | round(1) }}
 
+      # Původní název a ID zachovávají sensor.hp_forecast_min_temp; hodnota je průměr.
       - name: "HP Forecast Min Temp"
         unique_id: "hp_forecast_min_temp"
         unit_of_measurement: "°C"
@@ -1544,7 +1546,7 @@ automation:
   #-------------------------------------------------------------------------------
   - alias: "hp_automation_fetch_forecast"
     id: "hp_automation_fetch_forecast"
-    description: "Každých 15 minut a při změně počtu hodin načte hodinovou předpověď a uloží minimální teplotu"
+    description: "Každých 15 minut a při změně počtu hodin načte hodinovou předpověď a uloží průměrnou teplotu"
     trigger:
       - platform: time_pattern
         minutes: /15
@@ -1567,7 +1569,7 @@ automation:
             {% set hours = states('input_number.hp_forecast_hours') | int(6) %}
             {% set fc = forecast_data['weather.forecast_home']['forecast'][:hours] %}
             {% set temps = fc | map(attribute='temperature') | list %}
-            {{ temps | min if temps | length > 0 else states('sensor.hp_outside_temp_filtered') | float(0) }}
+            {{ (temps | sum) / (temps | length) if temps | length > 0 else states('sensor.hp_outside_temp_filtered') | float(0) }}
     mode: single
 
   ### Auto klima – volba režimu a podlahovky ###

@@ -472,7 +472,7 @@ views:
                 name: ① Venkovní teplota
                 icon: mdi:thermometer
               - entity: sensor.hp_forecast_min_temp
-                name: ① Předpověď min.
+                name: ① Předpověď průměr
                 icon: mdi:cloud-clock
               - entity: sensor.hp_curve_design_temp
                 name: → Návrhová teplota (topení)
