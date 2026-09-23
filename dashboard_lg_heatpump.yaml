@@ -192,7 +192,7 @@ views:
                 card:
                   type: custom:mushroom-entity-card
                   entity: input_boolean.hp_fireplace_mode
-                  name: Krb – pauza podlahy
+                  name: Krb – útlum teploty vody
                   icon: mdi:fireplace
                   tap_action:
                     action: toggle
@@ -204,7 +204,7 @@ views:
                 card:
                   type: custom:mushroom-entity-card
                   entity: input_boolean.hp_fireplace_mode
-                  name: Krb – pauza podlahy
+                  name: Krb – útlum teploty vody
                   icon: mdi:fireplace
                   tap_action:
                     action: none
@@ -516,6 +516,9 @@ views:
                 - entity: input_number.hp_curve_shift
                   name: Posun křivky
                   icon: mdi:tune-vertical
+                - entity: input_number.hp_fireplace_reduction
+                  name: Krb – snížení vody (3 = −3 °C)
+                  icon: mdi:fireplace
                 - entity: input_number.hp_room_target_temp
                   name: Cílová teplota místnosti
                   icon: mdi:home-thermometer-outline
@@ -554,6 +557,12 @@ views:
                   entity: input_number.hp_curve_shift
                   name: Posun křivky
                   icon: mdi:tune-vertical
+                  tap_action:
+                    action: none
+                - type: custom:mushroom-entity-card
+                  entity: input_number.hp_fireplace_reduction
+                  name: Krb – snížení vody (3 = −3 °C)
+                  icon: mdi:fireplace
                   tap_action:
                     action: none
                 - type: custom:mushroom-entity-card

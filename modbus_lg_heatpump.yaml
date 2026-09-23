@@ -585,6 +585,15 @@ input_number:
     step: 0.5
     unit_of_measurement: "°C"
 
+  # Bez initial: zachovat nastavení po restartu. Pro posun -3 °C nastavte 3.
+  hp_fireplace_reduction:
+    name: "Krb – snížení teploty vody"
+    min: 0
+    max: 10
+    step: 1
+    unit_of_measurement: "°C"
+    icon: mdi:fireplace
+
   hp_curve_heating_cutoff:
     name: "Topná křivka – cutoff venkovní teplota"
     min: 10
@@ -702,7 +711,7 @@ input_boolean:
     icon: mdi:volume-off
 
   hp_fireplace_mode:
-    name: "Krb – pauza podlahy"
+    name: "Krb – útlum teploty vody"
     icon: mdi:fireplace
 
   hp_auto_cutoff_enabled:
@@ -1115,7 +1124,11 @@ template:
           {% set solar = states('sensor.hp_solar_correction') | float(0) %}
           {% set room = states('sensor.hp_room_correction') | float(0) %}
           {% set shift = states('input_number.hp_curve_shift') | float(0) %}
-          {{ [min_t, raw + solar + room + shift] | max | round(0) | int }}
+          {% set fireplace = is_state('input_boolean.hp_fireplace_mode', 'on') %}
+          {% set reduction = states('input_number.hp_fireplace_reduction') | float(0) if fireplace else 0 %}
+          {# Při útlumu respektovat i minimum zapisovatelného setpointu HC1. #}
+          {% set min_t = [min_t, 20] | max if fireplace else min_t %}
+          {{ [min_t, raw + solar + room + shift - reduction] | max | round(0) | int }}
 
       - name: "HP Auto Climate Mode"
         unique_id: "hp_auto_climate_mode"
@@ -1608,9 +1621,6 @@ automation:
               - condition: state
                 entity_id: sensor.hp_auto_climate_mode
                 state: "Topení"
-              - condition: state
-                entity_id: input_boolean.hp_fireplace_mode
-                state: "off"
             sequence:
               - if:
                   - condition: not
@@ -1636,9 +1646,6 @@ automation:
               - condition: state
                 entity_id: sensor.hp_auto_climate_mode
                 state: "Chlazení"
-              - condition: state
-                entity_id: input_boolean.hp_fireplace_mode
-                state: "off"
             sequence:
               - if:
                   - condition: not
@@ -1685,9 +1692,6 @@ automation:
       - condition: state
         entity_id: input_boolean.hp_heating_curve_enabled
         state: "on"
-      - condition: state
-        entity_id: input_boolean.hp_fireplace_mode
-        state: "off"
       - condition: template
         value_template: >
           {{ states('input_select.hp_set_control_method') in
@@ -1781,24 +1785,11 @@ automation:
           entity_id: switch.hp_silent_mode
     mode: single
 
-  ### Krb – pauza podlahového topení ###
+  ### Krb – ukončení útlumu při poklesu pokojové teploty ###
   #-------------------------------------------------------------------------------
-  - alias: "hp_automation_fireplace_mode_on"
-    id: "hp_automation_fireplace_mode_on"
-    description: "Při zapnutí krb módu okamžitě vypne podlahové topení."
-    trigger:
-      - platform: state
-        entity_id: input_boolean.hp_fireplace_mode
-        to: "on"
-    action:
-      - service: switch.turn_off
-        target:
-          entity_id: switch.hp_main_switch
-    mode: single
-
   - alias: "hp_automation_fireplace_mode_resume"
     id: "hp_automation_fireplace_mode_resume"
-    description: "Jakmile teplota místnosti klesne na cílovou, obnoví topení a vypne krb mód."
+    description: "Jakmile teplota místnosti klesne na cílovou, zruší útlum vody; chod podlahovky dál řídí běžná regulace."
     trigger:
       - platform: state
         entity_id: sensor.hp_room_temp_filtered
@@ -1811,9 +1802,6 @@ automation:
           {{ states('sensor.hp_room_temp_filtered') | float(99) <=
              states('input_number.hp_room_target_temp') | float(21) }}
     action:
-      - service: switch.turn_on
-        target:
-          entity_id: switch.hp_main_switch
       - service: input_boolean.turn_off
         target:
           entity_id: input_boolean.hp_fireplace_mode
@@ -1868,9 +1856,6 @@ automation:
       - condition: state
         entity_id: switch.hp_main_switch
         state: "off"
-      - condition: state
-        entity_id: input_boolean.hp_fireplace_mode
-        state: "off"
     action:
       - service: switch.turn_on
         target:
@@ -1894,6 +1879,7 @@ automation:
     id: "hp_automation_apply_auto_climate_curve"
     description: >
       Při růstu požadavku upraví vodu ihned; při jeho snížení jednou za hodinu.
+      Při topení s aktivním krbem propíše i snížení ihned.
     trigger:
       - platform: time_pattern
         hours: /1
@@ -1921,7 +1907,8 @@ automation:
           {% set new = states('sensor.hp_climate_setpoint') | int(-99) %}
           {% set cur = states('input_number.hp_circuit1_target_temp') | int %}
           {% set diff = new - cur %}
-          {% if trigger.id == 'timer' %}
+          {% if trigger.id == 'timer' or
+                (climate_mode == 'Topení' and is_state('input_boolean.hp_fireplace_mode', 'on')) %}
             {{ diff | abs >= 1 }}
           {% elif climate_mode == 'Topení' %}
             {{ diff >= 1 }}
