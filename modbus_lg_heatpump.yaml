@@ -36,6 +36,7 @@ modbus:
         slave: 1
         unit_of_measurement: °C
         device_class: temperature
+        state_class: measurement
         input_type: input
 
       - name: "hp_outlet_temp"
@@ -47,6 +48,7 @@ modbus:
         slave: 1
         unit_of_measurement: °C
         device_class: temperature
+        state_class: measurement
         input_type: input
 
       - name: "hp_backup_heater_outlet_temp"
@@ -58,6 +60,7 @@ modbus:
         slave: 1
         unit_of_measurement: °C
         device_class: temperature
+        state_class: measurement
         input_type: input
 
       - name: "hp_dhw_water_temp"
@@ -69,6 +72,7 @@ modbus:
         slave: 1
         unit_of_measurement: °C
         device_class: temperature
+        state_class: measurement
         input_type: input
 
       - name: "hp_solar_collector_temp"
@@ -80,6 +84,7 @@ modbus:
         slave: 1
         unit_of_measurement: °C
         device_class: temperature
+        state_class: measurement
         input_type: input
 
       - name: "hp_room_temp" # Utility Room Temperature
@@ -91,6 +96,7 @@ modbus:
         scale: 0.1
         device_class: temperature
         unit_of_measurement: °C
+        state_class: measurement
         input_type: input
 
       - name: "hp_flow_rate"
@@ -102,6 +108,7 @@ modbus:
         slave: 1
         device_class: volume_flow_rate
         unit_of_measurement: L/min
+        state_class: measurement
         input_type: input
 
       - name: "hp_energy_state_input"
@@ -120,6 +127,7 @@ modbus:
         scale: 0.1
         device_class: temperature
         unit_of_measurement: °C
+        state_class: measurement
         input_type: input
 
       - name: "hp_water_pressure" # Water Pressure
@@ -131,6 +139,7 @@ modbus:
         scale: 0.1
         device_class: pressure
         unit_of_measurement: bar
+        state_class: measurement
         input_type: input
 
       - name: "hp_temp_liquid_gas" # Liquid Gas Temperature [0.1 °C ×10]
@@ -142,6 +151,7 @@ modbus:
         address: 16 # reg 17
         device_class: temperature
         unit_of_measurement: °C
+        state_class: measurement
         input_type: input
 
       - name: "hp_temp_pipe_out" # Pipe out temp [0.01 °C ×10]
@@ -153,6 +163,7 @@ modbus:
         address: 17 # reg 18
         device_class: temperature
         unit_of_measurement: °C
+        state_class: measurement
         input_type: input
 
       - name: "hp_temp_suction" # Suction Temperature [0.1 °C ×10]
@@ -164,6 +175,7 @@ modbus:
         address: 18 # reg 19
         device_class: temperature
         unit_of_measurement: °C
+        state_class: measurement
         input_type: input
 
       - name: "hp_temp_heatgas" # Hot Gas Temperature [0.1 °C ×10]
@@ -175,6 +187,7 @@ modbus:
         address: 19 # reg 20
         device_class: temperature
         unit_of_measurement: °C
+        state_class: measurement
         input_type: input
 
       - name: "hp_temp_before_vaporiser" # Steam Temperature Before Evaporator
@@ -186,6 +199,7 @@ modbus:
         scale: 0.1
         device_class: temperature
         unit_of_measurement: °C
+        state_class: measurement
         input_type: input
 
       - name: "hp_temp_after_vaporiser" # Steam Temperature After Evaporator
@@ -197,6 +211,7 @@ modbus:
         device_class: temperature
         unit_of_measurement: °C
         slave: 1
+        state_class: measurement
         input_type: input
 
       - name: "hp_high_pressure" # Steam Pressure Condenser [0.1 bar ×10]
@@ -208,6 +223,7 @@ modbus:
         device_class: pressure
         unit_of_measurement: bar
         slave: 1
+        state_class: measurement
         input_type: input
 
       - name: "hp_low_pressure" # Steam Pressure Evaporator [0.1 bar ×10]
@@ -219,6 +235,7 @@ modbus:
         device_class: pressure
         unit_of_measurement: bar
         slave: 1
+        state_class: measurement
         input_type: input
 
       - name: "hp_compressor_rpm" # Compressor RPM
@@ -229,6 +246,7 @@ modbus:
         address: 24 # reg 25
         slave: 1
         unit_of_measurement: rpm
+        state_class: measurement
         input_type: input
 
       - name: "hp_product_group" # Product Group
@@ -818,7 +836,7 @@ template:
       - name: "HP Energy State"
         unique_id: "hp_energy_state_label"
         state: >
-            {% set v = states('sensor.hp_energy_state_input_raw') | int(-1) %}
+            {% set v = states('sensor.hp_energy_state_input') | int(-1) %}
             {% if v == 0 %} Do Not Use
             {% elif v == 1 %} Forced Off
             {% elif v == 2 %} Normal Operation
