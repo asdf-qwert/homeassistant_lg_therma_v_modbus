@@ -3,6 +3,20 @@ This package is for connecting and controlling an LG Therma V heat pump with Hom
 
 You will find all information [here](https://github.com/basti242/homeassistant_lg_therma_v_modbus/wiki).
 
+## Odmrazování a spotřeba energie
+
+Odmrazování se nezapočítává do chlazení. Jeho elektrická spotřeba patří do
+topení; pokud je současně aktivní ohřev TUV, patří do TUV. Chlazení vyžaduje
+záporný rozdíl teplot vody, vypnuté odmrazování a režim LG Chlazení nebo Auto.
+Záporná delta při topení ani těsně po odmrazování v režimu Topení tedy chlazení
+nespustí. Během odmrazování se tepelný výkon vykazuje jako 0, aby odebrané
+teplo nezvyšovalo vyrobenou energii ani COP. Odebrané teplo se od vyrobené
+energie neodečítá.
+
+Po aktualizaci `modbus_lg_heatpump.yaml` zkontrolujte konfiguraci a restartujte
+Home Assistant. Oprava platí pro nové měření; dříve uloženou spotřebu mezi
+topením a chlazením automaticky nepřerozdělí.
+
 ## Krb – útlum teploty vody
 
 Přepínač `input_boolean.hp_fireplace_mode` už podlahovku nevypíná ani neblokuje

@@ -804,9 +804,13 @@ template:
         icon: mdi:snowflake
         delay_on: "00:01:00"
         delay_off: "00:01:00"
+        # Záporná delta při odmrazování ani v režimu topení není chlazení.
+        # Modbus režimy: 0 = chlazení, 3 = auto, 4 = topení.
         state: >
           {{ is_state('binary_sensor.hp_compressor_status', 'on')
              and is_state('binary_sensor.hp_dhw_heating_status', 'off')
+             and is_state('binary_sensor.hp_defrosting_status', 'off')
+             and states('sensor.hp_operation_mode') in ['0', '3']
              and states('sensor.hp_flow_rate') | float(0) > 0
              and states('sensor.hp_delta_temp') | float(0) <= -0.3 }}
 
@@ -846,7 +850,8 @@ template:
                                  + states('sensor.shellypro3em_a4f00fcfb120_phase_c_vykon') | float(0)) > 200 %}
           {% set flow = states('sensor.hp_flow_rate') | float(0) %}
           {% set dt = states('sensor.hp_delta_temp') | float(0) | abs %}
-          {% if compressor_on and flow > 0 and dt > 0 %}
+          {% if compressor_on and flow > 0 and dt > 0
+                and is_state('binary_sensor.hp_defrosting_status', 'off') %}
             {{ (flow * 69.77 * dt) | round(0) }}
           {% else %}
             0
@@ -913,7 +918,10 @@ template:
         unique_id: "hp_cop_cooling"
         state_class: measurement
         state: >
-          {% set cooling_on = is_state('binary_sensor.hp_cooling_active_by_delta', 'on') %}
+          {% set cooling_on = is_state('binary_sensor.hp_cooling_active_by_delta', 'on')
+                              and is_state('binary_sensor.hp_defrosting_status', 'off')
+                              and is_state('binary_sensor.hp_dhw_heating_status', 'off')
+                              and states('sensor.hp_operation_mode') in ['0', '3'] %}
           {% set p_thermal = states('sensor.hp_thermal_power') | float(0) %}
           {% set p_elec = states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0) %}
           {% if cooling_on and p_thermal > 0 and p_elec > 200 %}
@@ -947,7 +955,10 @@ template:
         state_class: measurement
         state: >
           {{ states('sensor.hp_thermal_power') | float(0)
-             if is_state('binary_sensor.hp_cooling_active_by_delta', 'on') else 0 }}
+             if is_state('binary_sensor.hp_cooling_active_by_delta', 'on')
+             and is_state('binary_sensor.hp_defrosting_status', 'off')
+             and is_state('binary_sensor.hp_dhw_heating_status', 'off')
+             and states('sensor.hp_operation_mode') in ['0', '3'] else 0 }}
 
       - name: "HP Electrical Power DHW"
         unique_id: "hp_electrical_power_dhw"
@@ -963,18 +974,26 @@ template:
         unit_of_measurement: W
         device_class: power
         state_class: measurement
+        # Odmrazování je spotřeba topení i po zhasnutí senzoru kladné delty.
+        # Ohřev TUV má přednost, aby se příkon nezapočítal dvakrát.
         state: >
           {{ states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0)
-             if is_state('binary_sensor.hp_heating_active_by_delta', 'on') else 0 }}
+             if is_state('binary_sensor.hp_dhw_heating_status', 'off')
+             and (is_state('binary_sensor.hp_heating_active_by_delta', 'on')
+                  or is_state('binary_sensor.hp_defrosting_status', 'on')) else 0 }}
 
       - name: "HP Electrical Power Cooling"
         unique_id: "hp_electrical_power_cooling"
         unit_of_measurement: W
         device_class: power
         state_class: measurement
+        # Přímé podmínky zastaví započítávání i během delay_off senzoru chlazení.
         state: >
           {{ states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0)
-             if is_state('binary_sensor.hp_cooling_active_by_delta', 'on') else 0 }}
+             if is_state('binary_sensor.hp_cooling_active_by_delta', 'on')
+             and is_state('binary_sensor.hp_defrosting_status', 'off')
+             and is_state('binary_sensor.hp_dhw_heating_status', 'off')
+             and states('sensor.hp_operation_mode') in ['0', '3'] else 0 }}
 
       - name: "HP Electrical Power Other"
         unique_id: "hp_electrical_power_other"
@@ -984,6 +1003,7 @@ template:
         state: >
           {{ states('sensor.shellypro3em_a4f00fcfb120_vykon') | float(0)
              if is_state('binary_sensor.hp_dhw_heating_status', 'off')
+             and is_state('binary_sensor.hp_defrosting_status', 'off')
              and is_state('binary_sensor.hp_heating_active_by_delta', 'off')
              and is_state('binary_sensor.hp_cooling_active_by_delta', 'off') else 0 }}
 
