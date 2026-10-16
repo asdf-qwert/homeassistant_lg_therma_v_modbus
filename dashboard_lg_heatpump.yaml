@@ -974,16 +974,16 @@ views:
           - type: entities
             title: Počty startů
             entities:
-              - entity: sensor.hp_compressor_starts_today
+              - entity: sensor.hp_compressor_starts_daily
                 name: Dnes
                 icon: mdi:calendar-today
-              - entity: sensor.hp_compressor_starts_week
+              - entity: sensor.hp_compressor_starts_weekly
                 name: Tento týden
                 icon: mdi:calendar-week
-              - entity: sensor.hp_compressor_starts_month
+              - entity: sensor.hp_compressor_starts_monthly
                 name: Tento měsíc
                 icon: mdi:calendar-month
-              - entity: sensor.hp_compressor_starts_year
+              - entity: sensor.hp_compressor_starts_yearly
                 name: Tento rok
                 icon: mdi:calendar
           - chart_type: bar

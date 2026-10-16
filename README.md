@@ -3,6 +3,48 @@ This package is for connecting and controlling an LG Therma V heat pump with Hom
 
 You will find all information [here](https://github.com/basti242/homeassistant_lg_therma_v_modbus/wiki).
 
+## Počty startů kompresoru
+
+Počty startů za den, týden, měsíc a rok se ukládají pomocí `utility_meter`
+z přírůstků `sensor.hp_compressor_starts_total`. Nezávisí na délce historie
+v recorderu a zůstávají zachované po restartu. Roční počet se nuluje
+1. ledna o půlnoci, měsíční první den měsíce, týdenní v pondělí a denní
+každou půlnoc podle časového pásma Home Assistantu.
+
+Původní `history_stats` přepočítával počty pouze z dosud uchované historie;
+po jejím promazání mohl proto klesnout i počet za aktuální rok. Navíc
+počítal běžící kompresor na začátku období jako start. Nové počítání
+zvyšuje celkový čítač pouze při přechodu `off` → `on`. Návrat z `unknown`
+nebo `unavailable` do `on` už nepřidává falešný start; starty během výpadku
+komunikace nebo vypnutého Home Assistantu nelze zpětně zjistit.
+
+### Přechod ze starých počtů
+
+Aktualizujte oba YAML soubory, zkontrolujte konfiguraci a restartujte Home
+Assistant. Dashboard nyní používá nové entity:
+
+| Období | Nová entita |
+| --- | --- |
+| Den | `sensor.hp_compressor_starts_daily` |
+| Týden | `sensor.hp_compressor_starts_weekly` |
+| Měsíc | `sensor.hp_compressor_starts_monthly` |
+| Rok | `sensor.hp_compressor_starts_yearly` |
+
+Původní entity s koncovkami `_today`, `_week`, `_month` a `_year` se už
+nepočítají. Vlastní karty a automatizace přesměrujte na nové entity;
+nepotřebné staré entity můžete odstranit v nastavení entit. Celkový čítač
+ani jeho senzor se nemění a kvůli přechodu je neresetujte.
+
+Nové měřiče začínají počítat od nasazení, nikoli zpětně od začátku období.
+Pro zachování dosavadních počtů použijte v **Vývojářské nástroje → Akce**
+akci `utility_meter.calibrate`, vyberte příslušnou novou entitu a nastavte
+ověřený počet pro její aktuální období. Kalibrace se dělá pro každé období
+zvlášť a pak se nové starty dál přičítají. Hodnotu neodvozujte z již
+zkráceného `history_stats`; smazaná historie se touto opravou neobnoví.
+
+Podrobnosti: [omezení History Stats](https://www.home-assistant.io/integrations/history_stats/#duration)
+a [trvalé měřiče Utility Meter](https://www.home-assistant.io/integrations/utility_meter/).
+
 ## Odmrazování a spotřeba energie
 
 Odmrazování se nezapočítává do chlazení. Jeho elektrická spotřeba patří do

@@ -880,6 +880,8 @@ template:
         unit_of_measurement: "starts"
         state_class: total_increasing
         icon: mdi:counter
+        # Výpadek zdrojového čítače nesmí vypadat jako reset na nulu.
+        availability: "{{ is_number(states('counter.hp_compressor_starts_total')) }}"
         state: "{{ states('counter.hp_compressor_starts_total') | int(0) }}"
 
       - name: "HP COP Carnot"
@@ -1902,10 +1904,11 @@ automation:
 
   - alias: "hp_automation_compressor_start_counter"
     id: "hp_automation_compressor_start_counter"
-    description: "Inkrementuje celkový počet startů kompresoru"
+    description: "Počítá skutečný přechod kompresoru z vypnuto na zapnuto, ne obnovu spojení."
     trigger:
       - platform: state
         entity_id: binary_sensor.hp_compressor_status
+        from: "off"
         to: "on"
     action:
       - service: counter.increment
@@ -1970,48 +1973,13 @@ counter:
     name: "HP Starty kompresoru celkem"
     icon: mdi:counter
     step: 1
+    restore: true
 
 
 ##############################################################
 # STATISTICS SENSORS
 ##############################################################
 sensor:
-  - platform: history_stats
-    name: "HP Compressor Starts Today"
-    unique_id: hp_compressor_starts_today
-    entity_id: binary_sensor.hp_compressor_status
-    state: "on"
-    type: count
-    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
-    end: "{{ now() }}"
-
-  - platform: history_stats
-    name: "HP Compressor Starts Week"
-    unique_id: hp_compressor_starts_week
-    entity_id: binary_sensor.hp_compressor_status
-    state: "on"
-    type: count
-    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=now().weekday()) }}"
-    end: "{{ now() }}"
-
-  - platform: history_stats
-    name: "HP Compressor Starts Month"
-    unique_id: hp_compressor_starts_month
-    entity_id: binary_sensor.hp_compressor_status
-    state: "on"
-    type: count
-    start: "{{ now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) }}"
-    end: "{{ now() }}"
-
-  - platform: history_stats
-    name: "HP Compressor Starts Year"
-    unique_id: hp_compressor_starts_year
-    entity_id: binary_sensor.hp_compressor_status
-    state: "on"
-    type: count
-    start: "{{ now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) }}"
-    end: "{{ now() }}"
-
   - platform: statistics
     name: "HP COP průměr"
     unique_id: hp_cop_avg
@@ -2096,9 +2064,47 @@ sensor:
 
 
 ##############################################################
-# UTILITY METERS — periodická spotřeba energie
+# UTILITY METERS — periodické počty startů a spotřeba energie
 ##############################################################
 utility_meter:
+  # Starty se sčítají z přírůstků trvalého čítače, nezávisle na čištění recorderu.
+  # Nová entity_id zabrání kolizi s původními history_stats senzory.
+  hp_compressor_starts_daily:
+    source: sensor.hp_compressor_starts_total
+    cycle: daily
+    name: "HP Compressor Starts Daily"
+    unique_id: hp_compressor_starts_daily_meter
+    periodically_resetting: false
+    net_consumption: false
+    always_available: true
+
+  hp_compressor_starts_weekly:
+    source: sensor.hp_compressor_starts_total
+    cycle: weekly
+    name: "HP Compressor Starts Weekly"
+    unique_id: hp_compressor_starts_weekly_meter
+    periodically_resetting: false
+    net_consumption: false
+    always_available: true
+
+  hp_compressor_starts_monthly:
+    source: sensor.hp_compressor_starts_total
+    cycle: monthly
+    name: "HP Compressor Starts Monthly"
+    unique_id: hp_compressor_starts_monthly_meter
+    periodically_resetting: false
+    net_consumption: false
+    always_available: true
+
+  hp_compressor_starts_yearly:
+    source: sensor.hp_compressor_starts_total
+    cycle: yearly
+    name: "HP Compressor Starts Yearly"
+    unique_id: hp_compressor_starts_yearly_meter
+    periodically_resetting: false
+    net_consumption: false
+    always_available: true
+
   # --- TUV ---
   hp_electricity_dhw_daily:
     source: sensor.hp_electrical_energy_dhw
